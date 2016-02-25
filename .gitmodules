@@ -1,0 +1,3 @@
+[submodule "dep/xHacking"]
+	path = dep/xHacking
+	url = https://github.com/gpascualg/xHacking.git

@@ -6,6 +6,7 @@
 #include "Loader/Loader.h"
 #include "Detour/Detour.h"
 
+#include <Login/login.h>
 
 using namespace xHacking;
 
@@ -25,17 +26,19 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	{
 		printf("%.2X ", (BYTE)buf[i]);
 	}
-	printf("\n:Decrypted hex:\n");
-	for (int i = 0; i < len; ++i)
-	{
-		printf("%.2X ", (BYTE)((buf[i] - 0xF) ^ 0xC3));
-	}
+
+	char* decrypted = new char[len];
+	memcpy(decrypted, buf, len);
+	Login::decryptLogin(decrypted, len);
+
 	printf("\nDecrypted chars:\n");
 	for (int i = 0; i < len; ++i)
 	{
-		printf("%c", ((buf[i] - 0xF) ^ 0xC3));
+		printf("%c", decrypted[i]);
 	}
 	printf("\n\n");
+
+	delete[] decrypted;
 
 	__asm POPFD;
 	__asm POPAD;
@@ -57,15 +60,14 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 		printf("%.2X ", (BYTE)buf[i]);
 	}
 
-	printf("\n:Decrypted hex:\n");
-	for (int i = 0; i < ret; ++i)
-	{
-		printf("%.2X ", (BYTE)(buf[i] - 0xF));
-	}
+	char* decrypted = new char[ret];
+	memcpy(decrypted, buf, ret);
+	Login::decrytAnswer(decrypted, ret);
+
 	printf("\nDecrypted chars:\n");
 	for (int i = 0; i < ret; ++i)
 	{
-		printf("%c", (buf[i] - 0xF));
+		printf("%c", decrypted[i]);
 	}
 	printf("\n\n");
 
