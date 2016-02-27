@@ -74,7 +74,10 @@ namespace Login
 		std::string randomNumber;
 		for (int i = 0; i < len; ++i)
 		{
-			randomNumber += buffer[i];
+			if (buffer[i])
+			{
+				randomNumber += buffer[i];
+			}
 		}
 
 		delete[] buffer;
@@ -100,21 +103,16 @@ namespace Login
 			BYTE tabla = password_table[i];
 
 			// tabla | actual
-
-			/*
 			WORD hash_i = ((tabla & 0xF0) | ((actual & 0xF0) >> 4)) << 8;
 			hash_i |= ((tabla & 0x0F) << 4) | (actual & 0x0F);
-			hash_i = ((hash_i & 0xFF) << 8) | ((hash_i >> 8) & 0xFF);
-			*/
-			WORD hash_i = (((tabla & 0x0F) << 4) | (actual & 0x0F)) << 8;
-			hash_i |= (tabla & 0xF0) | ((actual & 0xF0) >> 4);
 
 			hash += hex2str(hash_i);
 
 			i = (++i) % 23;
 		}
 
-		return hash;
+		i = seedRandom(0xA7);
+		return generateRandom1(i) + hash;
 	}
 
 	std::string login(std::string username, std::string password)
@@ -131,7 +129,7 @@ namespace Login
 		packet += std::string(" ") + encryptPass(password);
 		packet += std::string(" ") + hex2str(seedRandom(0x989680));
 		packet += 0x0B;
-		packet += "0.9.3.3054 0 ";
+		packet += "0.9.3.3055 0 ";
 		packet += md5.digestString(md5_nostaleX + md5_nostale + username);
 		packet += 0x0A;
 

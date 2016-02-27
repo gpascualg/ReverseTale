@@ -15,7 +15,7 @@ int main()
 		Login::seedRandom(0x989680);
 	}
 
-	std::string packet = Login::login("123qwe", "qwe");
+	std::string packet = Login::login("xxx", "xxx");
 	int packetLength = packet.length();
 	std::cout << packet << std::endl;
 
@@ -54,6 +54,7 @@ int main()
 	clientService.sin_family = AF_INET;
 	clientService.sin_addr.s_addr = inet_addr("79.110.84.75");
 	clientService.sin_port = htons(4005);
+	// connect
 
 	//----------------------
 	// Connect to server.
@@ -67,21 +68,23 @@ int main()
 		return 1;
 	}
 
-
 	int ret = send(ConnectSocket, packet.c_str(), packetLength, 0);
 	wprintf(L"Connected to server.\n");
 
 	char* buf = new char[8192];
 	int len = recv(ConnectSocket, buf, 8192, 0);
+	Login::decrytAnswer(buf, len);
 
+	printf("RECV: \n");
 	for (int i = 0; i < len; ++i)
 	{
-		printf("%.2X ", (BYTE)(buf[i] - 0xF));
+		printf("%.2X ", (BYTE)buf[i]);
 	}
+
 	printf("\n");
 	for (int i = 0; i < len; ++i)
 	{
-		printf("%c", buf[i] - 0xF);
+		printf("%c", buf[i]);
 	}
 	
 	iResult = closesocket(ConnectSocket);
