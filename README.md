@@ -1,6 +1,19 @@
 # ReverseTale
-ImplementaciŒ·ŒıŒÂn del reverse-engineering explicado en los vŒ·ŒıŒ·deos de Youtube!
+Implementaci√≥n del reverse-engineering explicado en los v√≠deos de Youtube! No se incluyen los binarios debido a motivos legales.
 
-**El uso comercial de este cŒ·ŒıŒÂdigo y/o su utilizaciŒ·ŒıŒÂn con fines que contradigan la legalidad espaÒola vigente estŒ·ŒıŒ› estrictamente prohibido y, en cualquier caso, su uso indebido no podrŒ·ŒıŒ› ser culpabilizado a su autor principal. Del mismo modo, el autor tampoco se hace responsable de los posibles daÒos debido al uso ("bueno o malo") de este cŒ·ŒıŒÂdigo.**
+**El uso comercial de este c√≥digo y/o su utilizaci√≥n con fines que contradigan la legalidad espa√±ola vigente est√° estrictamente prohibido y, en cualquier caso, su uso indebido no podr√° ser culpabilizado a su autor principal. Del mismo modo, el autor tampoco se hace responsable de los posibles da√±os debido al uso ("bueno o malo") de este c√≥digo.**
 
 **Comercial use of this code and/or its use with intention to violate the current legislation is strictly prohibited. And, in any case, the original author can not be held liable for any of its usages. The same way, the author can not be made responsible of any damaged produced by the usage ("good or bad") of this code.**
+
+
+# Como compilar
+
+* Descargar CMake, versi√≥n 2.8.0 o superior
+* Abrirlo y marcar:
+  * Where is the source code: "Carpeta donde este ReverseTale" (ej. C:/ReverseTale)
+  * Where to build the binaries "Carpeta donde este ReverseTale + /Build" (ej. C:/ReverseTale/Build)
+* Click en `Configure` -> Seleccionar la versi√≥n correcta de Visual Studio (ej. Visual Studio 14 2015)
+* Click en `Generate` cuando acabe el paso anterior
+* Dentro de la carpeta Build que antes mencionamos, encontrar√©is la soluci√≥n de Visual Studio para compilar
+* 
+  
