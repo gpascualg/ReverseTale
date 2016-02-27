@@ -2,12 +2,13 @@
 #include <string>
 #include <sstream>
 #include <time.h>
-#include <Windows.h>
+#include <inttypes.h>
+
 
 namespace Login
 {
-	DWORD seedRandom(DWORD p0);
-	std::string generateRandom1(DWORD p0);
+	uint32_t seedRandom(uint32_t p0);
+	std::string generateRandom1(uint32_t p0);
 	std::string encryptPass(std::string& password);
 	std::string login(std::string username, std::string password);
 

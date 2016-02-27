@@ -2,7 +2,7 @@
 #include "Login/login.h"
 
 
-std::string hex2str(BYTE w)
+std::string hex2str(uint8_t w)
 {
 	char hexString[3];
 	sprintf(hexString, "%.2X", w);
@@ -11,7 +11,7 @@ std::string hex2str(BYTE w)
 }
 
 
-std::string hex2str(WORD w)
+std::string hex2str(uint16_t w)
 {
 	char hexString[5];
 	sprintf(hexString, "%.4X", w);
@@ -19,7 +19,7 @@ std::string hex2str(WORD w)
 	return std::string(hexString);
 }
 
-std::string hex2str(DWORD w)
+std::string hex2str(uint32_t w)
 {
 	char hexString[9];
 	sprintf(hexString, "%.8X", w);
@@ -30,37 +30,37 @@ std::string hex2str(DWORD w)
 namespace Login
 {
 
-	DWORD _anterior = 0;
-	DWORD _operando2 = 0x8088405;
-	DWORD seedRandom(DWORD p0)
+	uint32_t _anterior = 0;
+	uint32_t _operando2 = 0x8088405;
+	uint32_t seedRandom(uint32_t p0)
 	{
-		DWORD resultado = (DWORD)((int)_anterior * (int)_operando2);
+		uint32_t resultado = (uint32_t)((int)_anterior * (int)_operando2);
 		++resultado;
 		_anterior = resultado;
 		uint64_t mult = (uint64_t)p0 * (uint64_t)resultado;
-		return (DWORD)(mult >> 32);
+		return (uint32_t)(mult >> 32);
 	}
 
 
-	std::string generateRandom1(DWORD p0)
+	std::string generateRandom1(uint32_t p0)
 	{
 		const int len = 7;
 
-		BYTE* buffer = new BYTE[len];
+		uint8_t* buffer = new uint8_t[len];
 		memset(buffer, 0, len);
-		BYTE* ESI = buffer + len;
+		uint8_t* ESI = buffer + len;
 
-		DWORD ECX = 0x0A;
-		DWORD EDX = 0;
+		uint32_t ECX = 0x0A;
+		uint32_t EDX = 0;
 
 		while (p0 != 0)
 		{
-			DWORD EAX = p0 / ECX;
+			uint32_t EAX = p0 / ECX;
 			EDX = p0 % ECX;
 			p0 = EAX;
 			--ESI;
 
-			BYTE DL = (EDX & 0xFF);
+			uint8_t DL = (EDX & 0xFF);
 			DL += 0x30;
 
 			if (DL >= 0x3A)
@@ -84,7 +84,7 @@ namespace Login
 		return randomNumber;
 	}
 
-	BYTE password_table[] = {
+	uint8_t password_table[] = {
 		0x2E, 0x2A, 0x17, 0x4F, 0x20, 0x24, 0x47, 0x11,
 		0x5B, 0x37, 0x53, 0x43, 0x15, 0x34, 0x45, 0x25,
 		0x4B, 0x1D, 0x2F, 0x58, 0x2B, 0x32, 0x63
@@ -99,11 +99,11 @@ namespace Login
 
 		for (int n = 0; n < password.length(); ++n)
 		{
-			BYTE actual = pass[n];
-			BYTE tabla = password_table[i];
+			uint8_t actual = pass[n];
+			uint8_t tabla = password_table[i];
 
 			// tabla | actual
-			WORD hash_i = ((tabla & 0xF0) | ((actual & 0xF0) >> 4)) << 8;
+			uint16_t hash_i = ((tabla & 0xF0) | ((actual & 0xF0) >> 4)) << 8;
 			hash_i |= ((tabla & 0x0F) << 4) | (actual & 0x0F);
 
 			hash += hex2str(hash_i);
