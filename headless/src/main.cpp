@@ -4,10 +4,16 @@
 #include <time.h>
 #include <Windows.h>
 
+#include <experimental/filesystem>
+
 #include <Login/login.h>
 #include <Tools/socket.h>
+#include <INIReader.h>
 
-int main()
+namespace fs = std::experimental::filesystem;
+
+
+int main(int argc, char** argv)
 {
 	srand(time(NULL));
 
@@ -16,7 +22,16 @@ int main()
 		Login::seedRandom(0x989680);
 	}
 
-	std::string packet = Login::login("xxx", "xxx");
+	fs::path dir = argv[0];
+	INIReader reader(dir.remove_filename().string() + "/config/default.conf");
+	if (reader.ParseError() < 0)
+	{
+		std::cout << "Couldn't load config file. Press [ENTER] to exit" << std::endl;
+		getchar();
+		return 1;
+	}
+
+	std::string packet = Login::login(reader.Get("Login", "User", "??"), reader.Get("Login", "Password", "??"));
 	int packetLength = packet.length();
 	std::cout << packet << std::endl;
 

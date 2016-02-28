@@ -1,3 +1,6 @@
 [submodule "dep/xHacking"]
 	path = dep/xHacking
 	url = https://github.com/gpascualg/xHacking.git
+[submodule "dep/inih"]
+	path = dep/inih
+	url = https://github.com/benhoyt/inih.git

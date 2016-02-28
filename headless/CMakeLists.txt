@@ -7,9 +7,10 @@ set(Headless_SOURCES
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/dep/xHacking/include)
+include_directories(${CMAKE_SOURCE_DIR}/dep/inih/cpp)
 
 add_executable(ReverseTale-Headless ${Headless_SOURCES})
-target_link_libraries(ReverseTale-Headless ws2_32 xHacking ReverseTale-Library)
+target_link_libraries(ReverseTale-Headless ws2_32 xHacking inih ReverseTale-Library)
 
 set_property(TARGET ReverseTale-Headless PROPERTY CXX_STANDARD 11)
 target_compile_features(ReverseTale-Headless PRIVATE cxx_decltype cxx_nullptr cxx_variadic_templates)
