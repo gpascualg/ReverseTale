@@ -4,16 +4,15 @@
 
 std::string hex2str(uint8_t w)
 {
-	char hexString[3];
+	static char hexString[3];
 	sprintf(hexString, "%.2X", w);
 	hexString[2] = '\0';
 	return std::string(hexString);
 }
 
-
 std::string hex2str(uint16_t w)
 {
-	char hexString[5];
+	static char hexString[5];
 	sprintf(hexString, "%.4X", w);
 	hexString[4] = '\0';
 	return std::string(hexString);
@@ -21,7 +20,7 @@ std::string hex2str(uint16_t w)
 
 std::string hex2str(uint32_t w)
 {
-	char hexString[9];
+	static char hexString[9];
 	sprintf(hexString, "%.8X", w);
 	hexString[8] = '\0';
 	return std::string(hexString);
@@ -29,7 +28,6 @@ std::string hex2str(uint32_t w)
 
 namespace Login
 {
-
 	uint32_t _anterior = 0;
 	uint32_t _operando2 = 0x8088405;
 	uint32_t seedRandom(uint32_t p0)
@@ -41,15 +39,12 @@ namespace Login
 		return (uint32_t)(mult >> 32);
 	}
 
-
 	std::string generateRandom1(uint32_t p0)
 	{
-		const int len = 7;
-
-		uint8_t* buffer = new uint8_t[len];
-		memset(buffer, 0, len);
-		uint8_t* ESI = buffer + len;
-
+		const int len = log10(p0) + 1;
+		std::string randomNumber(len, '\0');
+		
+		uint8_t ESI = len;
 		uint32_t ECX = 0x0A;
 		uint32_t EDX = 0;
 
@@ -68,19 +63,9 @@ namespace Login
 				DL += 0x07;
 			}
 
-			*ESI = DL;
+			randomNumber[ESI] = DL;
 		}
 
-		std::string randomNumber;
-		for (int i = 0; i < len; ++i)
-		{
-			if (buffer[i])
-			{
-				randomNumber += buffer[i];
-			}
-		}
-
-		delete[] buffer;
 		return randomNumber;
 	}
 
@@ -96,6 +81,7 @@ namespace Login
 		int i = seedRandom(0x17);
 		const char* pass = password.c_str();
 		std::string hash;
+		hash.reserve(password.length() * 4 + 3); // 4bytes per letter + 3 random
 
 		for (int n = 0; n < password.length(); ++n)
 		{
@@ -124,14 +110,15 @@ namespace Login
 		std::string md5_nostale = md5.digestFile((basePath + "\\Nostale.dat").c_str());		// 9D07DAD6A3D2EFCF97630E8DF6FC4724
 
 		std::string packet("NoS0575 ");
-		packet += generateRandom1(seedRandom(0x989680) + 0x86111);
-		packet += std::string(" ") + username;
-		packet += std::string(" ") + encryptPass(password);
-		packet += std::string(" ") + hex2str(seedRandom(0x989680));
-		packet += 0x0B;
-		packet += "0.9.3.3055 0 ";
-		packet += md5.digestString(md5_nostaleX + md5_nostale + username);
-		packet += 0x0A;
+		packet.reserve(8 + username.length() + 1 + password.length() * 4 + 4 + 9 + 1 + 13 + 32 + 1); // Pre-allocate size
+		packet += generateRandom1(seedRandom(0x989680) + 0x86111);				// 8 bytes
+		packet += std::string(" ") + username;									// username.length() + 1
+		packet += std::string(" ") + encryptPass(password);						// password.length() * 4 + 3 + 1
+		packet += std::string(" ") + hex2str(seedRandom(0x989680));				// 8 bytes + 1
+		packet += 0x0B;															// 1 byte
+		packet += "0.9.3.3055 0 ";												// 13 bytes
+		packet += md5.digestString(md5_nostaleX + md5_nostale + username);		// 32 bytes
+		packet += 0x0A;															// 1 byte
 
 		return packet;
 	}
