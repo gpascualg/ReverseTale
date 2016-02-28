@@ -5,6 +5,7 @@
 #include <Windows.h>
 
 #include <Login/login.h>
+#include <Tools/socket.h>
 
 int main()
 {
@@ -26,53 +27,15 @@ int main()
 		printf("%.2X ", (BYTE)packet[i]);
 	}
 
-	//----------------------
-	// Initialize Winsock
-	WSADATA wsaData;
-	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR) {
-		wprintf(L"WSAStartup function failed with error: %d\n", iResult);
-		return 1;
-	}
-	//----------------------
-	// Create a SOCKET for connecting to server
-	SOCKET ConnectSocket;
-	ConnectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-	if (ConnectSocket == INVALID_SOCKET) {
-		wprintf(L"socket function failed with error: %ld\n", WSAGetLastError());
-		WSACleanup();
-		return 1;
-	}
-
-	setsockopt(ConnectSocket, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
-	setsockopt(ConnectSocket, IPPROTO_TCP, TCP_NODELAY, NULL, 0);
-
-	//----------------------
-	// The sockaddr_in structure specifies the address family,
-	// IP address, and port of the server to be connected to.
-	sockaddr_in clientService;
-	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr("79.110.84.75");
-	clientService.sin_port = htons(4005);
-	// connect
-
-	//----------------------
-	// Connect to server.
-	iResult = connect(ConnectSocket, (SOCKADDR *)& clientService, sizeof(clientService));
-	if (iResult == SOCKET_ERROR) {
-		wprintf(L"connect function failed with error: %ld\n", WSAGetLastError());
-		iResult = closesocket(ConnectSocket);
-		if (iResult == SOCKET_ERROR)
-			wprintf(L"closesocket function failed with error: %ld\n", WSAGetLastError());
-		WSACleanup();
-		return 1;
-	}
-
-	int ret = send(ConnectSocket, packet.c_str(), packetLength, 0);
-	wprintf(L"Connected to server.\n");
+	Socket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+	socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+	socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
+	socket.connect("79.110.84.75", 4005);
 
 	char* buf = new char[8192];
-	int len = recv(ConnectSocket, buf, 8192, 0);
+	int ret = socket.send(packet.c_str(), packetLength);
+	int len = socket.recv(buf, 8192);
+
 	Login::decrytAnswer(buf, len);
 
 	printf("RECV: \n");
@@ -86,15 +49,7 @@ int main()
 	{
 		printf("%c", buf[i]);
 	}
-	
-	iResult = closesocket(ConnectSocket);
-	if (iResult == SOCKET_ERROR) {
-		wprintf(L"closesocket function failed with error: %ld\n", WSAGetLastError());
-		WSACleanup();
-		return 1;
-	}
 
 	getchar();
-	WSACleanup();
 	return 0;
 }
