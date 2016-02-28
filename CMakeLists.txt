@@ -11,6 +11,8 @@ include_directories(${ReverseTale_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
 execute_process(
 	COMMAND git apply ${PROJECT_SOURCE_DIR}/cmake/Patches/01-inih-cmake.patch
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/inih
+	OUTPUT_QUIET
+	ERROR_QUIET
 )
 
 # ---[ Dependencies
