@@ -1,6 +1,6 @@
 #include "Tools/md5.h"
 #include "Login/login.h"
-
+#include <cmath>
 
 std::string hex2str(uint8_t w)
 {
@@ -41,7 +41,7 @@ namespace Login
 
 	std::string generateRandom1(uint32_t p0)
 	{
-		const int len = log10(p0) + 1;
+		const int len = std::log10(p0) + 1;
 		std::string randomNumber(len, '\0');
 		
 		uint8_t ESI = len;
@@ -108,6 +108,7 @@ namespace Login
 		std::string basePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
 		std::string md5_nostaleX = md5.digestFile((basePath + "\\NostaleX.dat").c_str());	// 3D78AC41C49B735EFEE2008E2E0F1ED6
 		std::string md5_nostale = md5.digestFile((basePath + "\\Nostale.dat").c_str());		// 9D07DAD6A3D2EFCF97630E8DF6FC4724
+		std::string md5_hash = md5_nostaleX + md5_nostale + username;
 
 		std::string packet("NoS0575 ");
 		packet.reserve(8 + username.length() + 1 + password.length() * 4 + 4 + 9 + 1 + 13 + 32 + 1); // Pre-allocate size
@@ -117,7 +118,7 @@ namespace Login
 		packet += std::string(" ") + hex2str(seedRandom(0x989680));				// 8 bytes + 1
 		packet += 0x0B;															// 1 byte
 		packet += "0.9.3.3055 0 ";												// 13 bytes
-		packet += md5.digestString(md5_nostaleX + md5_nostale + username);		// 32 bytes
+		packet += md5.digestString(md5_hash);								// 32 bytes
 		packet += 0x0A;															// 1 byte
 
 		return packet;

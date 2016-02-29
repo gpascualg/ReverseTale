@@ -2,6 +2,18 @@
 
 #include <iostream>
 #include <string>
+#ifdef _WIN32
+        #include <Windows.h>
+#else
+        #include <unistd.h>
+        #include <stdio.h>
+        #include <sys/types.h>
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <arpa/inet.h>
+	#include <netinet/tcp.h>
+        #include <netdb.h>
+#endif
 
 
 #ifdef ERROR

@@ -2,16 +2,19 @@
 #include <string>
 #include <sstream>
 #include <time.h>
-#include <Windows.h>
-
-#include <experimental/filesystem>
 
 #include <Login/login.h>
 #include <Tools/socket.h>
 #include <INIReader.h>
 
-namespace fs = std::experimental::filesystem;
-
+#include <ReverseTale.h>
+#if HAVE_EXPERIMENTAL_FS
+	#include <experimental/filesystem>
+	
+	namespace fs = std::experimental::filesystem;
+#else
+	#include <Tools/filesystem.h>
+#endif
 
 int main(int argc, char** argv)
 {
@@ -39,7 +42,7 @@ int main(int argc, char** argv)
 
 	for (int i = 0; i < packetLength; ++i)
 	{
-		printf("%.2X ", (BYTE)packet[i]);
+		printf("%.2X ", (uint8_t)packet[i]);
 	}
 
 	Socket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
@@ -56,7 +59,7 @@ int main(int argc, char** argv)
 	printf("RECV: \n");
 	for (int i = 0; i < len; ++i)
 	{
-		printf("%.2X ", (BYTE)buf[i]);
+		printf("%.2X ", (uint8_t)buf[i]);
 	}
 
 	printf("\n");

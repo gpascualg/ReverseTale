@@ -3,9 +3,26 @@ cmake_minimum_required(VERSION 2.8.0)
 # ---[ Latte project
 project(ReverseTale C CXX)
 
+# -- [ Options
+option(BUILD_HEADLESS 	"Build headless bot" 	ON)
+option(BUILD_BOT	"Build bot"		ON)
+option(BUILD_SERVER	"Build NosTale Server"	ON)
+
+if(${BUILD_BOT})
+	set(BUILD_XHACKING ON)
+else()
+	set(BUILD_XHACKING OFF)
+endif()
+
 # ---[ Includes
 set(ReverseTale_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/library/include)
 include_directories(${ReverseTale_INCLUDE_DIR} ${PROJECT_BINARY_DIR})
+
+# ---[ Configure
+include(CheckIncludeFiles)
+check_include_files(experimental/filesystem HAVE_EXPERIMENTAL_FS)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/ReverseTale.h)
 
 # ---[ Patches
 execute_process(
@@ -16,10 +33,16 @@ execute_process(
 )
 
 # ---[ Dependencies
-add_subdirectory(dep/xHacking)
+if (${BUILD_XHACKING})
+	add_subdirectory(dep/xHacking)
+endif()
 add_subdirectory(dep/inih)
 
 # ---[ Subdirectories
 add_subdirectory(library)
-add_subdirectory(bot)
-add_subdirectory(headless)
+if (${BUILD_BOT})
+	add_subdirectory(bot)
+endif()
+if (${BUILD_HEADLESS})
+	add_subdirectory(headless)
+endif()

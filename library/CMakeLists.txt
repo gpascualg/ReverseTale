@@ -11,7 +11,9 @@ set(Library_SOURCES
 include_directories(${CMAKE_SOURCE_DIR}/dep/xHacking/include)
 
 add_library(ReverseTale-Library STATIC ${Library_SOURCES})
-target_link_libraries(ReverseTale-Library ws2_32 xHacking)
+
+# Do not target anything at this point, final products will
+#target_link_libraries(ReverseTale-Library ws2_32 xHacking)
 
 set_property(TARGET ReverseTale-Library PROPERTY CXX_STANDARD 11)
 target_compile_features(ReverseTale-Library PRIVATE cxx_decltype cxx_nullptr cxx_variadic_templates)

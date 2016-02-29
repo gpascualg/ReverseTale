@@ -1,13 +1,9 @@
-#include "tools/socket.h"
+#include "Tools/socket.h"
 #include <cassert>
 
-#ifdef _WIN32
-	#include <Windows.h>
-#else
-	#include <stdio.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
+#ifndef _WIN32
+	#define closesocket close
+	#define SOCKADDR struct sockaddr
 #endif
 
 
