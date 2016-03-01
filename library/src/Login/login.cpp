@@ -69,6 +69,43 @@ namespace Login
 		return randomNumber;
 	}
 
+
+	uint32_t decimal_str2hex(std::string id)
+	{
+		int i = 0;
+		uint32_t result = 0;
+		const char* cid = id.c_str();
+
+		char chr = cid[i++];
+		while (chr != 0)
+		{
+			chr -= 0x30;
+			if (chr > 9 || result >= 0xCCCCCCC)
+			{
+				return result;
+			}
+
+			result += result << 2;
+			result <<= 1;
+			result += chr;
+			chr = cid[i++];
+		}
+
+		return result;
+	}
+
+	uint8_t encrypt_number(uint32_t id)
+	{
+		id = id >> 6; // ID >>= 6;
+		id = id & 0xFF;
+		return id & 0x80000003;
+	}
+
+	uint8_t encrypt_key(uint32_t id)
+	{
+		return id & 0xFF;
+	}
+
 	uint8_t password_table[] = {
 		0x2E, 0x2A, 0x17, 0x4F, 0x20, 0x24, 0x47, 0x11,
 		0x5B, 0x37, 0x53, 0x43, 0x15, 0x34, 0x45, 0x25,
@@ -118,7 +155,7 @@ namespace Login
 		packet += std::string(" ") + hex2str(seedRandom(0x989680));				// 8 bytes + 1
 		packet += 0x0B;															// 1 byte
 		packet += "0.9.3.3055 0 ";												// 13 bytes
-		packet += md5.digestString(md5_hash);								// 32 bytes
+		packet += md5.digestString(md5_hash);									// 32 bytes
 		packet += 0x0A;															// 1 byte
 
 		return packet;

@@ -36,14 +36,8 @@ int main(int argc, char** argv)
 
 	std::string packet = Login::login(reader.Get("Login", "User", "??"), reader.Get("Login", "Password", "??"));
 	int packetLength = packet.length();
-	std::cout << packet << std::endl;
 
 	Login::encrytLogin(packet);
-
-	for (int i = 0; i < packetLength; ++i)
-	{
-		printf("%.2X ", (uint8_t)packet[i]);
-	}
 
 	Socket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 	socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);

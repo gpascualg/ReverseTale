@@ -4,9 +4,9 @@ cmake_minimum_required(VERSION 2.8.0)
 project(ReverseTale C CXX)
 
 # -- [ Options
-option(BUILD_HEADLESS 	"Build headless bot" 	ON)
-option(BUILD_BOT	"Build bot"		ON)
-option(BUILD_SERVER	"Build NosTale Server"	ON)
+option(BUILD_HEADLESS	"Build headless bot"	ON)
+option(BUILD_BOT		"Build bot"				ON)
+option(BUILD_SERVER		"Build NosTale Server"	ON)
 
 if(${BUILD_BOT})
 	set(BUILD_XHACKING ON)

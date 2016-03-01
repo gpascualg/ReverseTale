@@ -11,17 +11,11 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/dep/inih/cpp
 )
 
-if(CMAKE_COMPILER_IS_GNUC OR CMAKE_COMPILER_IS_GNUCXX)
-	add_definitions(-lstdc++fs)
-endif()
-
 if (MSVC)
 	set(SOCKET_LIB ws2_32)
 else()
 	set(SOCKET_LIB "")
 endif()
-
-MESSAGE(WARNING "ASD ${SOCKET_LIB}")
 
 add_executable(ReverseTale-Headless ${Headless_SOURCES})
 target_link_libraries(ReverseTale-Headless ${SOCKET_LIB} inih ReverseTale-Library)
