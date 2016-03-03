@@ -361,64 +361,6 @@ namespace Game
 		return decryptPacket_Phase1(packet, len);
 	}
 
-	// TODO: Might be [DEPRECATED]
-	std::string Session::decryptSession(char* packet, int len)
-	{
-		std::string decrypted;
-		for (int i = 1; i < len; i++)
-		{
-			if (packet[i] == 0xE)
-			{ 
-				return decrypted;
-			}
-			char chr = packet[i] - 0xF;
-
-			int firstbyte = chr;
-			int secondbyte = firstbyte;
-			secondbyte &= 0xF0;
-			firstbyte = firstbyte - secondbyte;
-			secondbyte >>= 0x4;
-
-			switch (secondbyte)
-			{
-				case 0:
-					decrypted += ' '; break;
-
-				case 1:
-					decrypted += ' '; break;
-
-				case 2:
-					decrypted += '-'; break;
-
-				case 3:
-					decrypted += '.'; break;
-
-				default:
-					decrypted += secondbyte + 0x2C; break;
-			}
-
-			switch (firstbyte)
-			{
-				case 0:
-					decrypted += ' '; break;
-
-				case 1:
-					decrypted += ' '; break;
-
-				case 2:
-					decrypted += '-'; break;
-
-				case 3:
-					decrypted += '.'; break;
-
-				default:
-					decrypted += firstbyte + 0x2C; break;
-			}
-		}
-
-		return decrypted;
-	}
-
 	std::string Session::decryptRecv(char* packet, int len)
 	{
 		std::string decAcc;

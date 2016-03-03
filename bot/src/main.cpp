@@ -41,15 +41,11 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	}
 	else
 	{
+		decrypted = session.decryptPacket((char*)buf, len);
+
 		if (session.id() == -1)
 		{
-			printf("SESSION ");
-			decrypted = session.decryptSession((char*)buf, len);
 			session.setID(sessionID);
-		}
-		else
-		{
-			decrypted = session.decryptPacket((char*)buf, len);
 		}
 	}
 

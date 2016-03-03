@@ -19,7 +19,7 @@
 
 int main(int argc, char** argv)
 {
-	srand(time(NULL));
+	srand((uint32_t)time(NULL));
 
 	for (int i = 0; i < (((float)rand() / RAND_MAX) + 1) * 100; ++i)
 	{
@@ -37,11 +37,11 @@ int main(int argc, char** argv)
 
 	Game::Session session;
 	std::string t = session.encryptPacket("8955 5893", 9);
-	for (int i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
+	for (std::size_t i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
 
 	session.setID("5893");
 	t = session.encryptPacket("8955 blipi", 10);
-	for (int i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
+	for (std::size_t i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
 	getchar();
 
 	std::string packet = Login::login(reader.Get("Login", "User", "??"), reader.Get("Login", "Password", "??"));

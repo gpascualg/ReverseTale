@@ -22,10 +22,7 @@ namespace Game
 		void reset();
 		void setID(std::string id);
 		std::string encryptPacket(char* packet, int len);
-		std::string decryptSession(char* packet, int len);
 		std::string decryptPacket(char* packet, int len);
-
-		#pragma deprecated(decryptSession)
 
 		std::string decryptRecv(char* packet, int len);
 
