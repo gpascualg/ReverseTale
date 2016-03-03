@@ -119,7 +119,7 @@ namespace Game
 								ch += 0x4 - 0x30;
 							}
 							*/
-							switch (ch)
+							switch ((uint8_t)ch)
 							{
 								case 0x20:
 									ch = 0x1; break;
@@ -211,7 +211,8 @@ namespace Game
 
 	std::string Session::encryptPacket(char* packet, int len)
 	{
-		return encryptPacket_Phase2(encryptPacket_Phase1(packet, len));
+		std::string phase1 = encryptPacket_Phase1(packet, len);
+		return encryptPacket_Phase2(phase1);
 	}
 
 	std::string Session::decryptPacket_Phase1(char* packet, int len)

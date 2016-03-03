@@ -1,0 +1,30 @@
+diff --git a/cpp/INIReader.cpp b/cpp/INIReader.cpp
+index e1306d1..17d14a2 100644
+--- a/cpp/INIReader.cpp
++++ b/cpp/INIReader.cpp
+@@ -23,6 +23,12 @@ int INIReader::ParseError()
+     return _error;
+ }
+ 
++bool INIReader::HasKey(string section, string name);
++{
++    string key = MakeKey(section, name);
++    return _values.count(key) > 0;
++}
++
+ string INIReader::Get(string section, string name, string default_value)
+ {
+     string key = MakeKey(section, name);
+diff --git a/cpp/INIReader.h b/cpp/INIReader.h
+index e2dec2d..1a62319 100644
+--- a/cpp/INIReader.h
++++ b/cpp/INIReader.h
+@@ -24,6 +24,8 @@ public:
+     // first error on parse error, or -1 on file open error.
+     int ParseError();
+ 
++    bool HasKey(std::string section, std::string name);
++
+     // Get a string value from INI file, returning default_value if not found.
+     std::string Get(std::string section, std::string name,
+                     std::string default_value);

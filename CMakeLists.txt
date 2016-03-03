@@ -31,6 +31,14 @@ execute_process(
 	OUTPUT_QUIET
 	ERROR_QUIET
 )
+execute_process(
+	COMMAND git apply
+	PROJECT_SOURCE_DIR}/cmake/Patches/02-inih-has_key.patch
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/inih
+	OUTPUT_QUIET
+	ERROR_QUIET
+)
+
 
 # ---[ Dependencies
 if (${BUILD_XHACKING})

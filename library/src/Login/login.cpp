@@ -146,13 +146,34 @@ namespace Login
 		return generateRandom1(i) + hash;
 	}
 
+	std::string nostalePath;
+	std::string md5_nostaleX;
+	std::string md5_nostale;
+	bool md5IsSet = false;
+
+	void setNostalePath(std::string path)
+	{
+		nostalePath = path;
+	}
+
+	void setMD5(std::string nostaleX, std::string nostale)
+	{
+		md5IsSet = true;
+		md5_nostaleX = nostaleX;
+		md5_nostale = nostale;
+	}
+
 	std::string login(std::string username, std::string password)
 	{
 		MD5 md5;
 
-		std::string basePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
-		std::string md5_nostaleX = md5.digestFile((basePath + "\\NostaleX.dat").c_str());	// 3D78AC41C49B735EFEE2008E2E0F1ED6
-		std::string md5_nostale = md5.digestFile((basePath + "\\Nostale.dat").c_str());		// 9D07DAD6A3D2EFCF97630E8DF6FC4724
+		if (!md5IsSet)
+		{
+			md5_nostaleX = md5.digestFile((nostalePath + "\\NostaleX.dat").c_str());
+			md5_nostale = md5.digestFile((nostalePath + "\\Nostale.dat").c_str());
+			md5IsSet = true;
+		}
+
 		std::string md5_hash = md5_nostaleX + md5_nostale + username;
 
 		std::string packet("NoS0575 ");

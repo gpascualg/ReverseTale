@@ -2,7 +2,7 @@
 #include <cassert>
 
 #ifndef _WIN32
-	#define closesocket close
+	#define closesocket ::close
 	#define SOCKADDR struct sockaddr
 #endif
 
@@ -49,11 +49,8 @@ Socket::Socket(int family, int type, int protocol) :
 
 Socket::~Socket()
 {
-	if (_status == SocketStatus::CONNECTED)
-	{
-		closesocket(_socket);
-	}
-	
+	close();
+
 	--_initialized;
 	if (_initialized == 0)
 	{
@@ -135,3 +132,13 @@ void Socket::setError(SocketError error)
 		closesocket(_socket);
 	}
 }
+
+void Socket::close()
+{
+	if (_status == SocketStatus::CONNECTED)
+	{
+		closesocket(_socket);
+		_status = SocketStatus::DISCONNECTED;
+	}
+}
+

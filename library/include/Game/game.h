@@ -27,6 +27,8 @@ namespace Game
 		std::string decryptRecv(char* packet, int len);
 
 		inline uint32_t id() { return _idHex; }
+		inline uint8_t number() { return _number; }
+		inline uint8_t key() { return _key; }
 
 	private:
 		std::string encryptPacket_Phase1(char* packet, int len);

@@ -7,6 +7,9 @@
 
 namespace Login
 {
+	void setNostalePath(std::string path);
+	void setMD5(std::string nostaleX, std::string nostale);
+
 	uint32_t seedRandom(uint32_t p0);
 	std::string generateRandom1(uint32_t p0);
 	std::string encryptPass(std::string& password);

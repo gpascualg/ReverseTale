@@ -4,6 +4,8 @@
 #include <time.h>
 
 #include <Login/login.h>
+#include <Cryptography/login.h>
+#include <Cryptography/game.h>
 #include <Game/game.h>
 #include <Tools/socket.h>
 #include <INIReader.h>
@@ -35,6 +37,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	/*
 	Game::Session session;
 	std::string t = session.encryptPacket("8955 5893", 9);
 	for (std::size_t i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
@@ -43,11 +46,17 @@ int main(int argc, char** argv)
 	t = session.encryptPacket("8955 blipi", 10);
 	for (std::size_t i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
 	getchar();
+	*/
+
+	Login::setNostalePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
+	if (reader.HasKey("MD5", "nostaleX"))
+	{
+		Login::setMD5(reader.Get("MD5", "nostaleX", ""), reader.Get("MD5", "nostale", ""));
+	}
 
 	std::string packet = Login::login(reader.Get("Login", "User", "??"), reader.Get("Login", "Password", "??"));
-	int packetLength = packet.length();
-
-	Login::encrytLogin(packet);
+	Crypto::Client::Login::Encrypter::get()->commit(packet);
+	Crypto::Client::Login::Encrypter::get()->finish(packet);
 
 	Socket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 	socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
@@ -55,22 +64,33 @@ int main(int argc, char** argv)
 	socket.connect("79.110.84.75", 4005);
 
 	char* buf = new char[8192];
-	int ret = socket.send(packet.c_str(), packetLength);
+	int ret = socket.send(packet.c_str(), packet.length());
 	int len = socket.recv(buf, 8192);
 
-	Login::decrytAnswer(buf, len);
+	std::string response(buf, len);
+	Crypto::Client::Login::Decrypter::get()->parse(response);
 
-	printf("RECV: \n");
-	for (int i = 0; i < len; ++i)
-	{
-		printf("%.2X ", (uint8_t)buf[i]);
-	}
+	auto tokens = Game::tokenize(response);
+	std::cout << "Login: " << response[0] << std::endl;
 
-	printf("\n");
-	for (int i = 0; i < len; ++i)
-	{
-		printf("%c", buf[i]);
-	}
+	// Connect to a random server!
+	//socket.close();
+	//socket.connect("xxxxx", 4005);
+
+	Game::Session session;
+	uint32_t alive = Login::seedRandom(0x989680);
+	std::string content = Login::generateRandom1(alive) + std::string(" ") + tokens[1];
+
+	Crypto::Client::Game::Encrypter::get()->commit(content);
+	Crypto::Client::Game::Encrypter::get()->finish(content, &session);
+
+	socket.send(content.c_str(), content.length());
+	len = socket.recv(buf, 8192);
+
+	packet = session.decryptRecv(buf, len);
+	std::cout << "Server Answ: " << packet << std::endl;
+
+
 
 	getchar();
 	return 0;

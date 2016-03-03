@@ -47,8 +47,12 @@ public:
 	bool setOption(int level, int option, const char* value, int valueLength);
 	bool connect(std::string ip, int16_t port);
 
+	inline SocketStatus status() { return _status; }
+	inline SocketError error() { return _error; }
+	
 	int send(const char* buffer, int len);
 	int recv(char* buffer, int size);
+	void close();
 
 private:
 	void setError(SocketError error);
