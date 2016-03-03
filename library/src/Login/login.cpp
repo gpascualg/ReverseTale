@@ -98,7 +98,15 @@ namespace Login
 	{
 		id = id >> 6; // ID >>= 6;
 		id = id & 0xFF;
-		return id & 0x80000003;
+		id &= 0x80000003;
+		if (id >= 0x80000000)
+		{
+			--id;
+			id |= 0xFFFFFFFC;
+			++id;
+		}
+
+		return id;
 	}
 
 	uint8_t encrypt_key(uint32_t id)
@@ -161,44 +169,52 @@ namespace Login
 		return packet;
 	}
 
-	char* encrytLogin(char* packet, int len)
+	std::string encrytLogin(char* packet, int len)
 	{
+		std::string decrypted(packet, len);
+
 		for (int i = 0; i < len; ++i)
 		{
-			packet[i] = (packet[i] ^ 0xC3) + 0x0F;
+			decrypted[i] = (decrypted[i] ^ 0xC3) + 0x0F;
 		}
 
-		return packet;
+		return decrypted;
 	}
 
-	char* decryptLogin(char* packet, int len)
+	std::string decryptLogin(char* packet, int len)
 	{
+		std::string decrypted(packet, len);
+
 		for (int i = 0; i < len; ++i)
 		{
-			packet[i] = (packet[i] - 0x0F) ^ 0xC3;
+			decrypted[i] = (decrypted[i] - 0x0F) ^ 0xC3;
 		}
 
-		return packet;
+		return decrypted;
 	}
 
-	char* encrytAnswer(char* packet, int len)
+	std::string encrytAnswer(char* packet, int len)
 	{
+		std::string decrypted(packet, len);
+
 		for (int i = 0; i < len; ++i)
 		{
-			packet[i] = packet[i] + 0x0F;
+			decrypted[i] = decrypted[i] + 0x0F;
 		}
 
-		return packet;
+		return decrypted;
 	}
 
-	char* decrytAnswer(char* packet, int len)
+	std::string decrytAnswer(char* packet, int len)
 	{
+		std::string decrypted(packet, len);
+
 		for (int i = 0; i < len; ++i)
 		{
-			packet[i] = packet[i] - 0x0F;
+			decrypted[i] = decrypted[i] - 0x0F;
 		}
 
-		return packet;
+		return decrypted;
 	}
 
 	std::string encrytLogin(std::string& packet)

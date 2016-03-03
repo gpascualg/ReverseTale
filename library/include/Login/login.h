@@ -12,10 +12,14 @@ namespace Login
 	std::string encryptPass(std::string& password);
 	std::string login(std::string username, std::string password);
 
-	char* encrytLogin(char* packet, int len);
-	char* decryptLogin(char* packet, int len);
-	char* encrytAnswer(char* packet, int len);
-	char* decrytAnswer(char* packet, int len);
+	uint32_t decimal_str2hex(std::string id);
+	uint8_t encrypt_number(uint32_t id);
+	uint8_t encrypt_key(uint32_t id);
+
+	std::string encrytLogin(char* packet, int len);
+	std::string decryptLogin(char* packet, int len);
+	std::string encrytAnswer(char* packet, int len);
+	std::string decrytAnswer(char* packet, int len);
 
 	std::string encrytLogin(std::string& packet);
 	std::string decryptLogin(std::string& packet);

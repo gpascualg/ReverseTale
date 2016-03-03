@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include <Login/login.h>
+#include <Game/game.h>
 #include <Tools/socket.h>
 #include <INIReader.h>
 
@@ -33,6 +34,15 @@ int main(int argc, char** argv)
 		getchar();
 		return 1;
 	}
+
+	Game::Session session;
+	std::string t = session.encryptPacket("8955 5893", 9);
+	for (int i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
+
+	session.setID("5893");
+	t = session.encryptPacket("8955 blipi", 10);
+	for (int i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
+	getchar();
 
 	std::string packet = Login::login(reader.Get("Login", "User", "??"), reader.Get("Login", "Password", "??"));
 	int packetLength = packet.length();

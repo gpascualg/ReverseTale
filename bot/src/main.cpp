@@ -7,39 +7,57 @@
 #include "Detour/Detour.h"
 
 #include <Login/login.h>
+#include <Game/game.h>
 
 using namespace xHacking;
 
+DWORD baseAddress = 0x68120C;
+std::string sessionID;
+Game::Session session;
 
 Detour<int, int, const char*, int, int>* sendDetour = NULL;
 Detour<int, int, char*, int, int>* recvDetour = NULL;
 int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 {
 	int ret = (*sendDetour)(s, buf, len, flags);
-
+	
 	__asm PUSHAD;
 	__asm PUSHFD;
 
-	printf("---> SEND Len: %X %d\nCrypted:\n", (void*)buf, len);
+	DWORD pointer1 = *(DWORD*)(baseAddress);
+	DWORD pointer2 = *(DWORD*)(pointer1);
+	BYTE login = *(BYTE*)(pointer2 + 0x31);
 
-	for (int i = 0; i < len; ++i)
+	printf("Encrypted bytes: ");
+	for (int i = 0; i < len; ++i) printf("%.2X ", (uint8_t)buf[i]);
+	printf("\n");
+
+	std::string decrypted;
+	printf("\nSEND Is Login? %d\n", login);
+	if (login == 0)
 	{
-		printf("%.2X ", (BYTE)buf[i]);
+		decrypted = Login::decryptLogin((char*)buf, len);
+		session.reset();
+	}
+	else
+	{
+		if (session.id() == -1)
+		{
+			printf("SESSION ");
+			decrypted = session.decryptSession((char*)buf, len);
+			session.setID(sessionID);
+		}
+		else
+		{
+			decrypted = session.decryptPacket((char*)buf, len);
+		}
 	}
 
-	char* decrypted = new char[len];
-	memcpy(decrypted, buf, len);
-	Login::decryptLogin(decrypted, len);
+	printf("Decrypted chars:\n");
+	printf("%s", decrypted.c_str());
 
-	printf("\nDecrypted chars:\n");
-	for (int i = 0; i < len; ++i)
-	{
-		printf("%c", decrypted[i]);
-	}
 	printf("\n\n");
-
-	delete[] decrypted;
-
+	
 	__asm POPFD;
 	__asm POPAD;
 
@@ -53,22 +71,26 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 	__asm PUSHAD;
 	__asm PUSHFD;
 
-	printf("---> RECV Len: %X %d\nCrypted:\n", (void*)buf, ret);
+	DWORD pointer1 = *(DWORD*)(baseAddress);
+	DWORD pointer2 = *(DWORD*)(pointer1);
+	BYTE login = *(BYTE*)(pointer2 + 0x31);
 
-	for (int i = 0; i < ret; ++i)
+	std::string decrypted;
+	
+	printf("\nRECV Is Login? %d\n", login);
+	if (login == 0)
 	{
-		printf("%.2X ", (BYTE)buf[i]);
+		decrypted = Login::decrytAnswer(buf, ret);
+		std::vector<std::string> tokens = Game::tokenize(decrypted);
+		sessionID = tokens[1];
+	}
+	else
+	{
+		decrypted = session.decryptRecv(buf, ret);
 	}
 
-	char* decrypted = new char[ret];
-	memcpy(decrypted, buf, ret);
-	Login::decrytAnswer(decrypted, ret);
+	printf("Decrypted chars:\n %s", decrypted.c_str());
 
-	printf("\nDecrypted chars:\n");
-	for (int i = 0; i < ret; ++i)
-	{
-		printf("%c", decrypted[i]);
-	}
 	printf("\n\n");
 
 	__asm POPFD;
