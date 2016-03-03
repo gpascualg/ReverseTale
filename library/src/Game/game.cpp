@@ -61,10 +61,11 @@ namespace Game
 			}
 		}
 
-		// len =					// EBP - 0C 
+		// len =					// EBP - 0C
 		int currentCounter = 0;		// EBP - 10
 		int lastCounter = 0;		// EBP - 1C
 		bool pair;
+		int sequence_counter = 0;
 
 		while (currentCounter < len)
 		{
@@ -76,14 +77,24 @@ namespace Game
 			if (currentCounter > lastCounter)
 			{
 				int currentLen = (currentCounter - lastCounter);
-				while (currentLen > 0)
+				int sequences = (currentLen / 0x7E);
+				for (std::size_t i = 0; i < currentLen; ++i, ++currentCounter)
 				{
-					if (currentLen > 0x7E)
+					if (i == (sequence_counter * 0x7E))
 					{
-						currentLen = 0x7E;
+						if (!sequences)
+						{
+							phase1 += currentLen - i;
+						}
+						else
+						{
+							phase1 += 0x7E;
+							--sequences;
+							++sequence_counter;
+						}
 					}
-					
-					phase1 += currentLen;
+
+					phase1 += packet[currentCounter] ^ 0xFF;
 				}
 			}
 			else

@@ -19,9 +19,12 @@
 int Socket::_initialized = 0;
 
 Socket::Socket(int family, int type, int protocol) :
+	_socket(SOCKET_ERROR),
+	_family(family),
+	_type(type),
+	_protocol(protocol),
 	_status(SocketStatus::DISCONNECTED),
-	_error(SocketError::NONE),
-	_socket(SOCKET_ERROR)
+	_error(SocketError::NONE)
 {
 	if (_initialized == 0)
 	{
@@ -138,7 +141,7 @@ void Socket::close()
 	if (_status == SocketStatus::CONNECTED)
 	{
 		closesocket(_socket);
-		_status = SocketStatus::DISCONNECTED;
+		_status = SocketStatus::CLOSED;
 	}
 }
 

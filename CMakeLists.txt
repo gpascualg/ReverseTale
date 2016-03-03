@@ -26,14 +26,13 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
 
 # ---[ Patches
 execute_process(
-	COMMAND git apply ${PROJECT_SOURCE_DIR}/cmake/Patches/01-inih-cmake.patch
+	COMMAND git apply --whitespace=fix ${PROJECT_SOURCE_DIR}/cmake/Patches/01-inih-cmake.patch
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/inih
 	OUTPUT_QUIET
 	ERROR_QUIET
 )
 execute_process(
-	COMMAND git apply
-	PROJECT_SOURCE_DIR}/cmake/Patches/02-inih-has_key.patch
+	COMMAND git apply --whitespace=fix ${PROJECT_SOURCE_DIR}/cmake/Patches/02-inih-has_key.patch
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/inih
 	OUTPUT_QUIET
 	ERROR_QUIET

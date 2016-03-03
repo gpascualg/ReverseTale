@@ -6,7 +6,7 @@ index e1306d1..17d14a2 100644
      return _error;
  }
  
-+bool INIReader::HasKey(string section, string name);
++bool INIReader::HasKey(string section, string name)
 +{
 +    string key = MakeKey(section, name);
 +    return _values.count(key) > 0;

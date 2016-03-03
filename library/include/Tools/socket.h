@@ -24,6 +24,7 @@ enum class SocketStatus
 {
 	DISCONNECTED,
 	CONNECTED,
+	CLOSED,
 	ERROR
 };
 
@@ -51,6 +52,7 @@ public:
 	inline SocketError error() { return _error; }
 	
 	int send(const char* buffer, int len);
+	int send(const std::string& buffer) { return send(buffer.c_str(), buffer.length()); }
 	int recv(char* buffer, int size);
 	void close();
 
@@ -60,6 +62,9 @@ private:
 private:
 	static int _initialized;
 	int _socket;
+	int _family;
+	int _type;
+	int _protocol;
 	SocketStatus _status;
 	SocketError _error;
 };

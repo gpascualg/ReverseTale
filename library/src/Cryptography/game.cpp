@@ -12,19 +12,20 @@ namespace Crypto
 			std::string phase1;
 			std::string mask(len, '0');
 
-			for (int i = 0; i < len; ++i)
+			for (std::size_t i = 0; i < len; ++i)
 			{
 				char ch = packet[i];
-				if (!(ch -= 0x20) || (ch += 0xF1) || (ch -= 0xB) || !(ch -= 0xC5))
+				if (ch != '#' && (!(ch -= 0x20) || (ch += 0xF1) < 0 || (ch -= 0xB) < 0 || !(ch -= 0xC5)))
 				{
 					mask[i] = '1';
 				}
 			}
 
 			// len =					// EBP - 0C 
-			int currentCounter = 0;		// EBP - 10
-			int lastCounter = 0;		// EBP - 1C
+			std::size_t currentCounter = 0;		// EBP - 10
+			std::size_t lastCounter = 0;		// EBP - 1C
 			bool pair;
+			std::size_t sequence_counter = 0;
 
 			while (currentCounter < len)
 			{
@@ -33,79 +34,89 @@ namespace Crypto
 				for (; currentCounter < len && mask[currentCounter] == '0'; ++currentCounter)
 				{}
 
-				if (currentCounter > lastCounter)
+				if (currentCounter)
 				{
-					int currentLen = (currentCounter - lastCounter);
-					while (currentLen > 0)
+					std::size_t currentLen = (currentCounter - lastCounter);
+					std::size_t sequences = (currentLen / 0x7E);
+					for (std::size_t i = 0; i < currentLen; ++i)
 					{
-						if (currentLen > 0x7E)
+						if (i == (sequence_counter * 0x7E))
 						{
-							currentLen = 0x7E;
-						}
-						
-						phase1 += currentLen;
-					}
-				}
-				else
-				{
-					if (currentCounter < len)
-					{
-						lastCounter = currentCounter;
-						pair = true;
-
-						for (; currentCounter < len && mask[currentCounter] == '1'; ++currentCounter)
-						{}
-
-						if (currentCounter > lastCounter)
-						{
-							int currentLen = (currentCounter - lastCounter);
-							if (currentLen > 0x7E)
+							if (!sequences)
 							{
-								currentLen = 0x7E;
+								phase1 += (uint8_t)(currentLen - i);
 							}
 							else
 							{
-								phase1 += currentLen | 0x80;
-							}
-
-							while (currentLen > 0)
-							{
-								char ch = packet[lastCounter];
-								++lastCounter;
-
-								/*
-								if (ch < ch + 0xD0 - 0xA) // Carry flag
-								{
-									ch += 0x4 - 0x30;
-								}
-								*/
-								switch ((uint8_t)ch)
-								{
-									case 0x20:
-										ch = 0x1; break;
-									case 0x2D:
-										ch = 0x2; break;
-									case 0x2E:
-										ch = 0x3; break;
-									case 0xFF:
-										ch = 0xE; break;
-									default:
-										ch -= 0x2C; break;
-								}
-
-								if (pair)
-								{
-									phase1 += ch << 4;
-								}
-								else
-								{
-									phase1.back() |= ch;
-								}
-
-								pair = !pair;
-								--currentLen;
+								phase1 += 0x7E;
+								--sequences;
+								++sequence_counter;
 							}
 						}
+
+						phase1 += packet[lastCounter] ^ 0xFF;
+						++lastCounter;
+					}
+				}
+
+				if (currentCounter >= len)
+				{
+					break;
+				}
+
+				lastCounter = currentCounter;
+				pair = true;
+
+				for (; currentCounter < len && mask[currentCounter] == '1'; ++currentCounter)
+				{}
+
+				if (currentCounter)
+				{
+					std::size_t currentLen = (currentCounter - lastCounter);
+					std::size_t sequences = (currentLen / 0x7E);
+					for (std::size_t i = 0; i < currentLen; ++i)
+					{
+						if (i == (sequence_counter * 0x7E))
+						{
+							if (!sequences)
+							{
+								phase1 += (uint8_t)(currentLen - i) | 0x80;
+							}
+							else
+							{
+								phase1 += (uint8_t)(0x7E | 0x80);
+								--sequences;
+								++sequence_counter;
+							}
+						}
+
+						char ch = packet[lastCounter];
+						++lastCounter;
+
+						switch ((uint8_t)ch)
+						{
+							case 0x20:
+								ch = 0x1; break;
+							case 0x2D:
+								ch = 0x2; break;
+							case 0x2E:
+								ch = 0x3; break;
+							case 0xFF:
+								ch = 0xE; break;
+							default:
+								ch -= 0x2C; break;
+						}
+
+						if (pair)
+						{
+							phase1 += ch << 4;
+						}
+						else
+						{
+							phase1.back() |= ch;
+						}
+
+						pair = !pair;
 					}
 				}
 			}
