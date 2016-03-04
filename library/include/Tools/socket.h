@@ -53,7 +53,7 @@ public:
 	
 	int send(const char* buffer, int len);
 	int send(const std::string& buffer) { return send(buffer.c_str(), buffer.length()); }
-	int recv(char* buffer, int size);
+	std::string recv();
 	void close();
 
 private:
@@ -65,6 +65,7 @@ private:
 	int _family;
 	int _type;
 	int _protocol;
+	char* _buf;
 	SocketStatus _status;
 	SocketError _error;
 };

@@ -22,7 +22,7 @@ namespace Crypto
 			public:
 				void finish(std::string& packet, Utils::Game::Session* session = nullptr);
 
-				static Encrypter* get()
+				static Crypto::Base::Encrypter* get()
 				{
 					if (!_instance)
 					{
@@ -41,7 +41,7 @@ namespace Crypto
 			public:
 				std::vector<std::string> parse(std::string& packet, Utils::Game::Session* session);
 
-				static Decrypter* get()
+				static Crypto::Base::Decrypter* get()
 				{
 					if (!_instance)
 					{
@@ -67,7 +67,7 @@ namespace Crypto
 				void commit(std::string& packet);
 				void finish(std::string& packet, Utils::Game::Session* session);
 
-				static Encrypter* get()
+				static Crypto::Base::Encrypter* get()
 				{
 					if (!_instance)
 					{
@@ -87,7 +87,7 @@ namespace Crypto
 			public:
 				std::vector<std::string> parse(std::string& packet, Utils::Game::Session* session = nullptr);
 
-				static Decrypter* get()
+				static Crypto::Base::Decrypter* get()
 				{
 					if (!_instance)
 					{

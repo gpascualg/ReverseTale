@@ -47,12 +47,18 @@ Socket::Socket(int family, int type, int protocol) :
 		{
 			setError(SocketError::INSTANTIATION_ERROR);
 		}
+		else
+		{
+			_buf = new char[8192];
+		}
 	}
 }
 
 Socket::~Socket()
 {
 	close();
+
+	delete[] _buf;
 
 	--_initialized;
 	if (_initialized == 0)
@@ -109,11 +115,11 @@ int Socket::send(const char* buffer, int len)
 	return result;
 }
 
-int Socket::recv(char* buffer, int len)
+std::string Socket::recv()
 {
 	assert(_status == SocketStatus::CONNECTED);
 
-	int result = ::recv(_socket, buffer, len, 0);
+	int result = ::recv(_socket, _buf, 8192, 0);
 
 	if (result == 0)
 	{
@@ -124,7 +130,8 @@ int Socket::recv(char* buffer, int len)
 		setError(SocketError::BROKEN_PIPE);
 	}
 
-	return result;
+	std::string buffer(_buf, result);
+	return buffer;
 }
 
 void Socket::setError(SocketError error)
