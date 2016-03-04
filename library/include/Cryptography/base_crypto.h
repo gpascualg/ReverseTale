@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 
 namespace Game
@@ -25,7 +26,7 @@ namespace Crypto
 		class Decrypter
 		{
 		public:
-			virtual void parse(std::string& packet, Game::Session* session = nullptr) = 0;
+			virtual std::vector<std::string> parse(std::string& packet, Game::Session* session = nullptr) = 0;
 
 		protected:
 			Decrypter();

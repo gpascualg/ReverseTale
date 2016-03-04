@@ -125,27 +125,27 @@ namespace Crypto
 			packet.assign(phase1);
 		}
 
-		std::string Phase2(std::string& packet)
+		std::vector<std::string> Phase2(std::string& packet)
 		{
 			static uint8_t table[] = {
 				0x00, 0x20, 0x2D, 0x2E, 0x30, 0x31, 0x32, 0x33,
 				0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x0A, 0x00
 			};
 
+			std::vector<std::string> output;
 			uint32_t packetLen = (uint32_t)packet.length();
 			std::string decrypted;
-
-			std::cout << "PHASE 2 :: " << packetLen << "(";
 
 			for (uint32_t counter = 0; counter < packetLen - 1;)
 			{
 				uint8_t chr = (uint8_t)packet[counter];
 				++counter;
-				printf("%d[%.2X], ", counter - 1, chr);
 
 				if (chr == 0xFF)
 				{
-					// TODO: Add as single packet
+					output.push_back(decrypted);
+					packet.assign(decrypted);
+					decrypted = "";
 					continue;
 				}
 
@@ -195,8 +195,13 @@ namespace Crypto
 				}
 			}
 
-			std::cout << "...)" << std::endl;
-			return decrypted;
+			if (!decrypted.empty())
+			{
+				output.push_back(decrypted);
+				packet.assign(decrypted);
+			}
+
+			return output;
 		}
 	}
 
@@ -220,7 +225,7 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			void Decrypter::parse(std::string& packet, ::Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, ::Game::Session* session)
 			{
 				int i = 0;
 				uint8_t chr = 0;
@@ -274,15 +279,15 @@ namespace Crypto
 				}
 
 				std::vector<std::string> temp = ::Game::tokenize(packet, (uint8_t)0xFF);
-				std::string save = "";
+				std::vector<std::string> output;
 
 				for (std::size_t i = 0; i < temp.size(); i++)
 				{
-					save += Crypto::Base::Phase2(temp[i]);
-					save += (uint8_t)0xFF;
+					Crypto::Base::Phase2(temp[i]);
+					output.push_back(temp[i]);
 				}
 
-				packet.assign(save);
+				return output;
 			}
 		}
 	}
@@ -361,17 +366,20 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			void Decrypter::parse(std::string& packet, ::Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, ::Game::Session* session)
 			{
 				std::string decAcc;
+				std::vector<std::string> output;
 				auto parts = ::Game::tokenize(packet, (uint8_t)0xFF);
 
 				for (std::size_t i = 0; i < parts.size(); ++i)
 				{
-					decAcc += Crypto::Base::Phase2(parts[i]);
+					Crypto::Base::Phase2(parts[i]);
+					output.push_back(parts[i]);
 				}
 				
-				packet.assign(decAcc);
+				packet.assign(parts.back());
+				return output;
 			}
 		}
 	}

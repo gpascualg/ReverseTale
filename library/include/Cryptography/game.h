@@ -36,7 +36,7 @@ namespace Crypto
 			class Decrypter : public Crypto::Base::Decrypter
 			{
 			public:
-				void parse(std::string& packet, ::Game::Session* session);
+				std::vector<std::string> parse(std::string& packet, ::Game::Session* session);
 
 				static Decrypter* get()
 				{
@@ -82,7 +82,7 @@ namespace Crypto
 			class Decrypter : public Crypto::Base::Decrypter
 			{
 			public:
-				void parse(std::string& packet, ::Game::Session* session = nullptr);
+				std::vector<std::string> parse(std::string& packet, ::Game::Session* session = nullptr);
 
 				static Decrypter* get()
 				{

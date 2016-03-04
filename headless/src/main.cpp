@@ -36,18 +36,7 @@ int main(int argc, char** argv)
 		getchar();
 		return 1;
 	}
-
-	/*
-	Game::Session session;
-	std::string t = session.encryptPacket("8955 5893", 9);
-	for (std::size_t i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
-
-	session.setID("5893");
-	t = session.encryptPacket("8955 blipi", 10);
-	for (std::size_t i = 0; i < t.length(); ++i) printf("%.2X ", (uint8_t)t[i]);
-	getchar();
-	*/
-
+	
 	Login::setNostalePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
 	if (reader.HasKey("MD5", "nostaleX"))
 	{
@@ -115,18 +104,16 @@ int main(int argc, char** argv)
 	std::string allPacket = userPacket + passPacket;
 
 	Crypto::Client::Game::Encrypter::get()->finish(allPacket, &session);
-	for (std::size_t i = 0; i < allPacket.length(); ++i) printf("%.2X ", (uint8_t)allPacket[i]);
 
 	Sleep(1000);
 
 	gamesocket.send(allPacket);
 
 	len = gamesocket.recv(buf, 8192);
-
-	packet = session.decryptRecv(buf, len);
+	packet = std::string(buf, len);
+	Crypto::Client::Game::Decrypter::get()->parse(packet);
 	std::cout << "Server Answ: " << packet << std::endl;
-
-
+	
 	getchar();
 	return 0;
 }

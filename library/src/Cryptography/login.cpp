@@ -28,13 +28,15 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			void Decrypter::parse(std::string& packet, Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, Game::Session* session)
 			{
 				std::size_t len = packet.length();
 				for (int i = 0; i < len; ++i)
 				{
 					packet[i] = (packet[i] - 0x0F) ^ 0xC3;
 				}
+
+				return std::vector<std::string> { packet };
 			}
 		}
 	}
@@ -63,13 +65,15 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			void Decrypter::parse(std::string& packet, Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, Game::Session* session)
 			{
 				std::size_t len = packet.length();
 				for (int i = 0; i < len; ++i)
 				{
 					packet[i] = packet[i] - 0x0F;
 				}
+
+				return std::vector<std::string> { packet };
 			}
 		}
 	}
