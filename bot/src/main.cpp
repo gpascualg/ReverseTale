@@ -6,14 +6,15 @@
 #include "Loader/Loader.h"
 #include "Detour/Detour.h"
 
-#include <Login/login.h>
-#include <Game/game.h>
+#include <Tools/utils.h>
+#include <Cryptography/login.h>
+#include <Cryptography/game.h>
 
 using namespace xHacking;
 
 DWORD baseAddress = 0x68120C;
 std::string sessionID;
-Game::Session session;
+Utils::Game::Session session;
 
 Detour<int, int, const char*, int, int>* sendDetour = NULL;
 Detour<int, int, char*, int, int>* recvDetour = NULL;
@@ -32,16 +33,16 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	for (int i = 0; i < len; ++i) printf("%.2X ", (uint8_t)buf[i]);
 	printf("\n");
 
-	std::string decrypted;
+	std::string packet(buf, len);
 	printf("\nSEND Is Login? %d\n", login);
 	if (login == 0)
 	{
-		decrypted = Login::decryptLogin((char*)buf, len);
+		Crypto::Server::Login::Decrypter::get()->parse(packet);
 		session.reset();
 	}
 	else
 	{
-		decrypted = session.decryptPacket((char*)buf, len);
+		Crypto::Server::Game::Decrypter::get()->parse(packet, &session);
 
 		if (session.id() == -1)
 		{
@@ -50,7 +51,7 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	}
 
 	printf("Decrypted chars:\n");
-	printf("%s", decrypted.c_str());
+	printf("%s", packet.c_str());
 
 	printf("\n\n");
 	
@@ -71,21 +72,20 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 	DWORD pointer2 = *(DWORD*)(pointer1);
 	BYTE login = *(BYTE*)(pointer2 + 0x31);
 
-	std::string decrypted;
-	
+	std::string packet(buf, ret);	
 	printf("\nRECV Is Login? %d\n", login);
 	if (login == 0)
 	{
-		decrypted = Login::decrytAnswer(buf, ret);
-		std::vector<std::string> tokens = Game::tokenize(decrypted);
+		Crypto::Client::Login::Decrypter::get()->parse(packet);
+		std::vector<std::string> tokens = Utils::tokenize(packet);
 		sessionID = tokens[1];
 	}
 	else
 	{
-		decrypted = session.decryptRecv(buf, ret);
+		Crypto::Client::Game::Decrypter::get()->parse(packet);
 	}
 
-	printf("Decrypted chars:\n %s", decrypted.c_str());
+	printf("Decrypted chars:\n %s", packet.c_str());
 
 	printf("\n\n");
 

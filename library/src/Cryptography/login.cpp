@@ -1,5 +1,5 @@
 #include "Cryptography/login.h"
-#include "Game/game.h"
+#include "Tools/utils.h"
 
 
 namespace Crypto
@@ -15,7 +15,7 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::finish(std::string& packet, Game::Session* session)
+			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
 				for (int i = 0; i < len; ++i)
@@ -28,7 +28,7 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
 				for (int i = 0; i < len; ++i)
@@ -52,7 +52,7 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::finish(std::string& packet, Game::Session* session)
+			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
 				for (int i = 0; i < len; ++i)
@@ -65,7 +65,7 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
 				for (int i = 0; i < len; ++i)

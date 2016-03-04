@@ -3,9 +3,12 @@
 #include "Cryptography/base_crypto.h"
 
 
-namespace Game
+namespace Utils
 {
-	class Session;
+	namespace Game
+	{
+		class Session;
+	}
 }
 
 namespace Crypto
@@ -17,7 +20,7 @@ namespace Crypto
 			class Encrypter : public Crypto::Base::Encrypter
 			{
 			public:
-				void finish(std::string& packet, Game::Session* session = nullptr);
+				void finish(std::string& packet, Utils::Game::Session* session = nullptr);
 
 				static Encrypter* get()
 				{
@@ -36,7 +39,7 @@ namespace Crypto
 			class Decrypter : public Crypto::Base::Decrypter
 			{
 			public:
-				std::vector<std::string> parse(std::string& packet, Game::Session* session = nullptr);
+				std::vector<std::string> parse(std::string& packet, Utils::Game::Session* session = nullptr);
 
 				static Decrypter* get()
 				{
@@ -61,7 +64,7 @@ namespace Crypto
 			class Encrypter : public Crypto::Base::Encrypter
 			{
 			public:
-				void finish(std::string& packet, Game::Session* session = nullptr);
+				void finish(std::string& packet, Utils::Game::Session* session = nullptr);
 
 				static Encrypter* get()
 				{
@@ -81,7 +84,7 @@ namespace Crypto
 			class Decrypter : public Crypto::Base::Decrypter
 			{
 			public:
-				std::vector<std::string> parse(std::string& packet, Game::Session* session = nullptr);
+				std::vector<std::string> parse(std::string& packet, Utils::Game::Session* session = nullptr);
 
 				static Decrypter* get()
 				{

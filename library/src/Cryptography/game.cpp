@@ -1,5 +1,5 @@
 #include "Cryptography/game.h"
-#include "Game/game.h"
+#include "Tools/utils.h"
 
 
 namespace Crypto
@@ -216,7 +216,7 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::finish(std::string& packet, ::Game::Session* session)
+			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
 			{
 				Crypto::Base::Phase1(packet);
 			}
@@ -225,7 +225,7 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, ::Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
 			{
 				int i = 0;
 				uint8_t chr = 0;
@@ -278,7 +278,7 @@ namespace Crypto
 						break;
 				}
 
-				std::vector<std::string> temp = ::Game::tokenize(packet, (uint8_t)0xFF);
+				std::vector<std::string> temp = Utils::tokenize(packet, (uint8_t)0xFF);
 				std::vector<std::string> output;
 
 				for (std::size_t i = 0; i < temp.size(); i++)
@@ -287,6 +287,7 @@ namespace Crypto
 					output.push_back(temp[i]);
 				}
 
+				packet.assign(temp.back());
 				return output;
 			}
 		}
@@ -308,7 +309,7 @@ namespace Crypto
 				Crypto::Base::Phase1(packet);
 			}
 
-			void Encrypter::finish(std::string& packet, ::Game::Session* session)
+			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
 			{
 				int i = 0;
 				uint8_t chr = 0;
@@ -366,11 +367,11 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, ::Game::Session* session)
+			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
 			{
 				std::string decAcc;
 				std::vector<std::string> output;
-				auto parts = ::Game::tokenize(packet, (uint8_t)0xFF);
+				auto parts = Utils::tokenize(packet, (uint8_t)0xFF);
 
 				for (std::size_t i = 0; i < parts.size(); ++i)
 				{

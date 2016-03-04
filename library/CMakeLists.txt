@@ -1,13 +1,11 @@
 project(ReverseTale-Library)
 
 file(GLOB_RECURSE sources_Crypto    src/Cryptography/*.cpp     include/Cryptography/*.h)
-file(GLOB_RECURSE sources_Login     src/Login/*.cpp            include/Login/*.h)
 file(GLOB_RECURSE sources_Tools     src/Tools/*.cpp            include/Tools/*.h)
 file(GLOB_RECURSE sources_Game      src/Game/*.cpp             include/Game/*.h)
 
 set(Library_SOURCES
 	${sources_Crypto}
-    ${sources_Login}
     ${sources_Tools}
 	${sources_Game}
 )

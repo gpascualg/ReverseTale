@@ -3,10 +3,9 @@
 #include <sstream>
 #include <time.h>
 
-#include <Login/login.h>
+#include <Tools/utils.h>
 #include <Cryptography/login.h>
 #include <Cryptography/game.h>
-#include <Game/game.h>
 #include <Tools/socket.h>
 #include <INIReader.h>
 
@@ -25,7 +24,7 @@ int main(int argc, char** argv)
 
 	for (int i = 0; i < (((float)rand() / RAND_MAX) + 1) * 100; ++i)
 	{
-		Login::seedRandom(0x989680);
+		Utils::seedRandom(0x989680);
 	}
 
 	fs::path dir = argv[0];
@@ -37,15 +36,15 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	Login::setNostalePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
+	Utils::setNostalePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
 	if (reader.HasKey("MD5", "nostaleX"))
 	{
-		Login::setMD5(reader.Get("MD5", "nostaleX", ""), reader.Get("MD5", "nostale", ""));
+		Utils::setMD5(reader.Get("MD5", "nostaleX", ""), reader.Get("MD5", "nostale", ""));
 	}
 
-	std::string username = reader.Get("Login", "User", "??");
+	std::string username = reader.Get("Login", "User", "??"); std::cout << username;
 	std::string password = reader.Get("Login", "Password", "??");
-	std::string packet = Login::login(username, password);
+	std::string packet = Utils::Login::makePacket(username, password);
 	std::cout << packet << std::endl;
 
 	Crypto::Client::Login::Encrypter::get()->commit(packet);
@@ -63,7 +62,7 @@ int main(int argc, char** argv)
 	std::string response(buf, len);
 	Crypto::Client::Login::Decrypter::get()->parse(response);
 
-	auto tokens = Game::tokenize(response);
+	auto tokens = Utils::tokenize(response);
 	std::cout << response << std::endl;
 	
 	if (tokens[0] != "NsTeST")
@@ -81,9 +80,9 @@ int main(int argc, char** argv)
 	gamesocket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
 	gamesocket.connect("79.110.84.79", 4024);
 
-	Game::Session session;
-	uint32_t alive = Login::seedRandom(0x9680);
-	std::string content = Login::generateRandom1(alive) + std::string(" ") + tokens[1];
+	Utils::Game::Session session;
+	uint32_t alive = Utils::seedRandom(0x9680);
+	std::string content = Utils::hex2decimal_str(alive) + std::string(" ") + tokens[1];
 	std::cout << content << std::endl;
 
 
@@ -94,9 +93,9 @@ int main(int argc, char** argv)
 
 	session.setID(tokens[1]);
 
-	std::string userPacket = Login::generateRandom1(alive + 1) + std::string(" ") + username;
+	std::string userPacket = Utils::hex2decimal_str(alive + 1) + std::string(" ") + username;
 	std::cout << userPacket << std::endl;
-	std::string passPacket = Login::generateRandom1(alive + 2) + std::string(" ") + password;
+	std::string passPacket = Utils::hex2decimal_str(alive + 2) + std::string(" ") + password;
 	std::cout << passPacket << std::endl;
 
 	Crypto::Client::Game::Encrypter::get()->commit(userPacket);
