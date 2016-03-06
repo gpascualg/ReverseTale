@@ -89,6 +89,7 @@ namespace Net
 		Packet& operator<<(Packet& packet);
 		Packet& operator<<(std::string& str);
 
+		inline const std::string& data() { return _packet; }
 		inline PacketType type() { return _type; }
 		inline Utils::Game::Session* session() { return _session; }
 
