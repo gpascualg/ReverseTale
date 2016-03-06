@@ -7,14 +7,24 @@
 #include "Detour/Detour.h"
 
 #include <Tools/utils.h>
+#include <Game/packet.h>
 #include <Cryptography/login.h>
 #include <Cryptography/game.h>
 
 using namespace xHacking;
+using namespace Net;
+
 
 DWORD baseAddress = 0x68120C;
 std::string sessionID;
 Utils::Game::Session session;
+
+inline bool isLogin()
+{
+	DWORD pointer1 = *(DWORD*)(baseAddress);
+	DWORD pointer2 = *(DWORD*)(pointer1);
+	return *(BYTE*)(pointer2 + 0x31) == 0x00;
+}
 
 Detour<int, int, const char*, int, int>* sendDetour = NULL;
 Detour<int, int, char*, int, int>* recvDetour = NULL;
@@ -25,38 +35,35 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	__asm PUSHAD;
 	__asm PUSHFD;
 
-	DWORD pointer1 = *(DWORD*)(baseAddress);
-	DWORD pointer2 = *(DWORD*)(pointer1);
-	BYTE login = *(BYTE*)(pointer2 + 0x31);
-
-	printf("Encrypted bytes: ");
-	for (int i = 0; i < len; ++i) printf("%.2X ", (uint8_t)buf[i]);
-	printf("\n");
-
-	std::string packet(buf, len);
-	printf("\nSEND Is Login? %d\n", login);
-	if (login == 0)
+	bool login = isLogin();
+	Packet* packet = nullptr;
+	if (login)
 	{
-		Crypto::Server::Login::Decrypter::get()->parse(packet);
+		packet = gFactory->make(PacketType::SERVER_LOGIN, &session, std::string(buf, len));
 		session.reset();
 	}
 	else
 	{
-		Crypto::Server::Game::Decrypter::get()->parse(packet, &session);
-
-		if (session.id() == -1)
-		{
-			session.setID(sessionID);
-		}
+		packet = gFactory->make(PacketType::SERVER_GAME, &session, std::string(buf, len));
 	}
 
-	printf("Decrypted chars:\n");
-	printf("%s", packet.c_str());
+	printf("\nSend:\n");
+	auto packets = packet->decrypt();
+	for (std::string data : packets)
+	{
+		std::cout << ">> " << data << std::endl;
+	}
 
-	printf("\n\n");
+	// Set session after decrypting
+	if (!login && session.id() == -1)
+	{
+		session.setID(sessionID);
+	}
 	
 	__asm POPFD;
 	__asm POPAD;
+
+	gFactory->recycle(packet);
 
 	return ret;
 }
@@ -68,26 +75,31 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 	__asm PUSHAD;
 	__asm PUSHFD;
 
-	DWORD pointer1 = *(DWORD*)(baseAddress);
-	DWORD pointer2 = *(DWORD*)(pointer1);
-	BYTE login = *(BYTE*)(pointer2 + 0x31);
-
-	std::string packet(buf, ret);	
-	printf("\nRECV Is Login? %d\n", login);
-	if (login == 0)
+	bool login = isLogin();
+	Packet* packet = nullptr;
+	if (login)
 	{
-		Crypto::Client::Login::Decrypter::get()->parse(packet);
-		std::vector<std::string> tokens = Utils::tokenize(packet);
-		sessionID = tokens[1];
+		packet = gFactory->make(PacketType::CLIENT_LOGIN, &session, std::string(buf, ret));
 	}
 	else
 	{
-		Crypto::Client::Game::Decrypter::get()->parse(packet);
+		packet = gFactory->make(PacketType::CLIENT_GAME, &session, std::string(buf, ret));
 	}
 
-	printf("Decrypted chars:\n %s", packet.c_str());
+	printf("\nRecv:\n");
+	auto packets = packet->decrypt();
+	for (std::string data : packets)
+	{
+		std::cout << ">> " << data << std::endl;
+	}
 
-	printf("\n\n");
+	if (login)
+	{
+		auto tokens = Utils::tokenize(packets[0]);
+		sessionID = tokens[1];
+	}
+
+	gFactory->recycle(packet);
 
 	__asm POPFD;
 	__asm POPAD;
