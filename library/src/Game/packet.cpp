@@ -143,6 +143,12 @@ namespace Net
 		return *this;
 	}
 
+	Packet& Packet::operator<<(std::string&& str)
+	{
+		_packet += str;
+		return *this;
+	}
+
 	Packet* operator+(Packet& one, Packet& other)
 	{
 		Packet* packet = gFactory->make(one.type(), one.session());
