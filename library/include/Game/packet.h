@@ -88,6 +88,7 @@ namespace Net
 		Packet& operator<<(char* str);
 		Packet& operator<<(Packet& packet);
 		Packet& operator<<(std::string& str);
+		Packet& operator<<(std::string&& str);
 
 		inline const std::string& data() { return _packet; }
 		inline PacketType type() { return _type; }

@@ -11,6 +11,10 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/dep/inih/cpp
 )
 
+if (NOT ${DEBUG})
+	add_definitions(-DNDEBUG)
+endif()
+
 if (MSVC)
 	set(SOCKET_LIB ws2_32)
 else()

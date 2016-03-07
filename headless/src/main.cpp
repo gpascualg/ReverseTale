@@ -20,6 +20,12 @@
 	#include <Tools/filesystem.h>
 #endif
 
+
+#ifndef _WIN32
+	#define Sleep sleep
+#endif
+
+
 int main(int argc, char** argv)
 {
 	srand((uint32_t)time(NULL));

@@ -36,9 +36,7 @@ namespace Crypto
 					packet[i] = (packet[i] - 0x0F) ^ 0xC3;
 				}
 
-				std::vector<std::string> output;
-				output.push_back(packet);
-				return output;
+				return std::vector<std::string> { packet };
 			}
 		}
 	}
@@ -75,9 +73,7 @@ namespace Crypto
 					packet[i] = packet[i] - 0x0F;
 				}
 
-				std::vector<std::string> output;
-				output.push_back(packet);
-				return output;
+				return std::vector<std::string> { packet };
 			}
 		}
 	}

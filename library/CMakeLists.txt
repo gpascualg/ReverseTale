@@ -12,6 +12,10 @@ set(Library_SOURCES
 
 include_directories(${CMAKE_SOURCE_DIR}/dep/xHacking/include)
 
+if (NOT ${DEBUG})
+        add_definitions(-DNDEBUG)
+endif()
+
 add_library(ReverseTale-Library STATIC ${Library_SOURCES})
 
 # Do not target anything at this point, final products will
