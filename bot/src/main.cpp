@@ -57,7 +57,10 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	// Set session after decrypting
 	if (!login && session.id() == -1)
 	{
+		auto tokens = Utils::tokenize(packets[0]);
+
 		session.setID(sessionID);
+		session.setAlive(Utils::decimal_str2hex(tokens[0]));
 	}
 	
 	__asm POPFD;

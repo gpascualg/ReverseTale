@@ -44,10 +44,17 @@ int main(int argc, char** argv)
 		Utils::setMD5(reader.Get("MD5", "nostaleX", ""), reader.Get("MD5", "nostale", ""));
 	}
 
+	if (!reader.HasKey("Login", "User") || !reader.HasKey("Login", "Password"))
+	{
+		std::cout << "Incomplete configuration file. Press [ENTER] to exit" << std::endl;
+		getchar();
+		return 1;
+	}
+
 	// Save session, user and password
 	std::string sessionID;
-	std::string username = reader.Get("Login", "User", "??");
-	std::string password = reader.Get("Login", "Password", "??");
+	std::string username = reader.Get("Login", "User", "");
+	std::string password = reader.Get("Login", "Password", "");
 
 	// Connect to Login Server
 	{
@@ -104,12 +111,12 @@ int main(int argc, char** argv)
 
 		// Make a session & alive
 		Utils::Game::Session session;
-		uint32_t alive = Utils::seedRandom(0x9680);
+		session.setAlive(Utils::seedRandom(0x9680));
 
 		// Send session & alive
 		{
 			Packet* packet = gFactory->make(PacketType::CLIENT_GAME, &session);
-			*packet << Utils::hex2decimal_str(alive) << " " << sessionID;
+			*packet << sessionID;
 			packet->send(&socket);
 		}
 
@@ -124,8 +131,8 @@ int main(int argc, char** argv)
 			Packet* pass = gFactory->make(PacketType::CLIENT_GAME, &session);
 
 			// Add info, [alive + " " + data]
-			*user << Utils::hex2decimal_str(alive + 1) << " " << username;
-			*pass << Utils::hex2decimal_str(alive + 2) << " " << password;
+			*user << username;
+			*pass << password;
 
 			// Combine and send
 			Packet* result = *user + *pass;

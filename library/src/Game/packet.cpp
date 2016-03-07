@@ -79,6 +79,13 @@ namespace Net
 		if (!_isCommitted)
 		{
 			_isCommitted = true;
+
+			// Automatically add alive id
+			if (_type == PacketType::CLIENT_GAME && _session)
+			{
+				_packet = Utils::hex2decimal_str(_session->alive()) + std::string(" ") + _packet;
+			}
+
 			_crypter->commit(_packet);
 		}
 	}

@@ -31,5 +31,17 @@ namespace Utils
 			_number = Utils::encrypt_number(_idHex);
 			_key = Utils::encrypt_key(_idHex);
 		}
+
+		void Session::setAlive(uint32_t alive)
+		{
+			_alive = alive - 1; // -1, it will be incremented on next call
+		}
+
+		uint32_t Session::alive()
+		{
+			uint32_t next = _alive + 1;
+			++_alive;
+			return next;
+		}
 	}
 }
