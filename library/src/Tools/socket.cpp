@@ -130,8 +130,14 @@ std::string Socket::recv()
 		setError(SocketError::BROKEN_PIPE);
 	}
 
-	std::string buffer(_buf, result);
-	return buffer;
+	if (result > 0)
+	{
+		return std::string(_buf, result);
+	}
+	else
+	{
+		return std::string("");
+	}
 }
 
 void Socket::setError(SocketError error)

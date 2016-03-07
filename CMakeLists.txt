@@ -7,6 +7,7 @@ project(ReverseTale C CXX)
 option(BUILD_HEADLESS	"Build headless bot"	ON)
 option(BUILD_BOT		"Build bot"				ON)
 option(BUILD_SERVER		"Build NosTale Server"	ON)
+option(DEBUG			"Debug library and tools"	ON)
 
 if(${BUILD_BOT})
 	set(BUILD_XHACKING ON)

@@ -50,6 +50,16 @@ namespace Net
 
 	void Factory::recycle(Packet* packet)
 	{
+#ifndef NDEBUG
+		for (auto it = _pool.begin(); it != _pool.end(); ++it)
+		{
+			if (*it == packet)
+			{
+				assert(false && "Packet can not be recycled twice");
+			}
+		}
+#endif
+		
 		_pool.push_back(packet);
 	}
 

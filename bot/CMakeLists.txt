@@ -8,6 +8,10 @@ set(Bot_SOURCES
 
 include_directories(${CMAKE_SOURCE_DIR}/dep/xHacking/include)
 
+if (NOT ${DEBUG})
+        add_definitions(-DNDEBUG)
+endif()
+
 add_library(ReverseTale-Bot SHARED ${Bot_SOURCES})
 target_link_libraries(ReverseTale-Bot ws2_32 xHacking ReverseTale-Library)
 
