@@ -35,20 +35,3 @@ bool ServerSocket::serve(int16_t port, std::string ip, int maxPending)
 	_status = SocketStatus::SERVING;
 	return true;
 }
-
-AcceptedSocket* ServerSocket::accept()
-{
-	assert(_status == SocketStatus::SERVING);
-
-	AcceptedSocket* socket = new AcceptedSocket();
-	socklen_t len = sizeof(sockaddr_in);
-	socket->_socket = ::accept(_socket, (struct sockaddr *)&socket->_address, &len);
-
-	if (socket->_socket <= SOCKET_ERROR)
-	{
-		delete socket;
-		return nullptr;
-	}
-
-	return socket;
-}

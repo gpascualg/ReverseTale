@@ -6,7 +6,7 @@
 #include <Cryptography/login.h>
 #include <Cryptography/game.h>
 #include <Game/packet.h>
-#include <Tools/client_socket.h>
+#include <Tools/server_socket.h>
 #include <Tools/utils.h>
 
 #include <INIReader.h>
@@ -26,6 +26,10 @@
 #endif
 
 
+class Client
+{};
+
+
 int main(int argc, char** argv)
 {
 	srand((uint32_t)time(NULL));
@@ -35,125 +39,18 @@ int main(int argc, char** argv)
 		Utils::seedRandom(0x989680);
 	}
 
-	fs::path dir = argv[0];
-	INIReader reader(dir.remove_filename().string() + "/config/default.conf");
-	if (reader.ParseError() < 0)
+
+	ServerSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+	socket.serve(4005);
+
+	while (1)
 	{
-		std::cout << "Couldn't load config file. Press [ENTER] to exit" << std::endl;
-		getchar();
-		return 1;
-	}
-	
-	Utils::setNostalePath("P:\\Program Files (x86)\\GameforgeLive\\Games\\ESP_spa\\NosTale");
-	if (reader.HasKey("MD5", "nostaleX"))
-	{
-		Utils::setMD5(reader.Get("MD5", "nostaleX", ""), reader.Get("MD5", "nostale", ""));
-	}
-
-	if (!reader.HasKey("Login", "User") || !reader.HasKey("Login", "Password"))
-	{
-		std::cout << "Incomplete configuration file. Press [ENTER] to exit" << std::endl;
-		getchar();
-		return 1;
-	}
-
-	// Save session, user and password
-	std::string sessionID;
-	std::string username = reader.Get("Login", "User", "");
-	std::string password = reader.Get("Login", "Password", "");
-
-	// Connect to Login Server
-	{
-		using namespace Net;
-
-		// Connect
-		ClientSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-		socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
-		socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
-		socket.connect("79.110.84.75", 4005);
-
-		// Login 
+		AcceptedSocket* client = socket.accept<Client*>();
+		if (client)
 		{
-			// Make login packet
-			Packet* packet = gFactory->make(PacketType::CLIENT_LOGIN);
-			*packet << Utils::Login::makePacket(username, password);
-
-			// Send login
-			packet->send(&socket);
-		}
-
-		// Parse response
-		{
-			// Receive login result
-			Packet* packet = gFactory->make(PacketType::CLIENT_LOGIN, socket.recv());
-			std::vector<std::string> response = packet->decrypt();
-			std::string& data = response[0];
-
-			// It should be NsTeST, otherwise fail
-			auto tokens = Utils::tokenize(data);
-			if (tokens[0] != "NsTeST")
-			{
-				std::cout << "Login failed" << std::endl;
-				getchar();
-				return 1;
-			}
-
-			sessionID = tokens[1];
-			std::cout << "Session: " << sessionID << std::endl;
-		}
-
-		socket.close();
-	}
-
-	// Game Server
-	{
-		using namespace Net;
-
-		// Connect
-		ClientSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-		socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
-		socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
-		socket.connect("79.110.84.79", 4024);
-
-		// Make a session & alive
-		Utils::Game::Session session;
-		session.setAlive(Utils::seedRandom(0x9680));
-
-		// Send session & alive
-		{
-			Packet* packet = gFactory->make(PacketType::CLIENT_GAME, &session);
-			*packet << sessionID;
-			packet->send(&socket);
-		}
-
-		// Set session and wait
-		session.setID(sessionID);
-		Sleep(1000);
-
-		// Send username and password
-		{
-			// Make "user + pass" combination
-			Packet* user = gFactory->make(PacketType::CLIENT_GAME, &session);
-			Packet* pass = gFactory->make(PacketType::CLIENT_GAME, &session);
-
-			// Add info, [alive + " " + data]
-			*user << username;
-			*pass << password;
-
-			// Combine and send
-			Packet* result = *user + *pass;
-			result->send(&socket);
-		}
-
-		// Receive next packet
-		{
-			Packet* packet = gFactory->make(PacketType::CLIENT_GAME, &session, socket.recv());
-			std::vector<std::string> response = packet->decrypt();
-
-			for (std::string data : response)
-			{
-				std::cout << "Recv: " << data << std::endl;
-			}
+			client->setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+			client->setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
+			client->setUserData(new Client());
 		}
 	}
 	
