@@ -6,7 +6,7 @@
 #include <Cryptography/login.h>
 #include <Cryptography/game.h>
 #include <Game/packet.h>
-#include <Tools/socket.h>
+#include <Tools/client_socket.h>
 #include <Tools/utils.h>
 
 #include <INIReader.h>
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 		using namespace Net;
 
 		// Connect
-		Socket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+		ClientSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 		socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 		socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
 		socket.connect("79.110.84.75", 4005);
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 		using namespace Net;
 
 		// Connect
-		Socket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+		ClientSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 		socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 		socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
 		socket.connect("79.110.84.79", 4024);

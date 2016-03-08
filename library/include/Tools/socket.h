@@ -20,6 +20,16 @@
 	#undef ERROR
 #endif
 
+#ifndef _WIN32
+	#define closesocket ::close
+	#define SOCKADDR struct sockaddr
+#endif
+
+#ifndef SOCKET_ERROR
+	#define SOCKET_ERROR -1
+#endif
+
+
 enum class SocketStatus
 {
 	DISCONNECTED,
@@ -45,13 +55,9 @@ enum class SocketError
 class Socket
 {
 public:
-	Socket(int family, int type, int protocol);
 	virtual ~Socket();
 
 	bool setOption(int level, int option, const char* value, int valueLength);
-	bool connect(std::string ip, int16_t port);
-	bool server(int16_t port);
-	bool accept();
 
 	inline SocketStatus status() { return _status; }
 	inline SocketError error() { return _error; }
@@ -61,10 +67,12 @@ public:
 	std::string recv();
 	void close();
 
-private:
+protected:
+	Socket();
+	Socket(int family, int type, int protocol);
 	void setError(SocketError error);
 
-private:
+protected:
 	static int _initialized;
 	int _socket;
 	int _family;
@@ -74,3 +82,4 @@ private:
 	SocketStatus _status;
 	SocketError _error;
 };
+

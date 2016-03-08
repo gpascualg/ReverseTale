@@ -1,22 +1,14 @@
 #include "Tools/socket.h"
 #include <cassert>
 
-#ifndef _WIN32
-	#define closesocket ::close
-	#define SOCKADDR struct sockaddr
-#endif
-
-
-#ifdef ERROR
-	#undef ERROR
-#endif
-
-#ifndef SOCKET_ERROR
-	#define SOCKET_ERROR -1
-#endif
-
 
 int Socket::_initialized = 0;
+
+Socket::Socket():
+	_socket(SOCKET_ERROR),
+	_status(SocketStatus::DISCONNECTED),
+	_error(SocketError::NONE)
+{}
 
 Socket::Socket(int family, int type, int protocol) :
 	_socket(SOCKET_ERROR),
@@ -77,77 +69,6 @@ bool Socket::setOption(int level, int option, const char* value, int valueLength
 	return result != SOCKET_ERROR;
 }
 
-bool Socket::connect(std::string ip, int16_t port)
-{
-	assert(_status == SocketStatus::DISCONNECTED);
-
-	sockaddr_in clientService;
-	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr(ip.c_str());
-	clientService.sin_port = htons(port);
-
-	int result = ::connect(_socket, (SOCKADDR*)&clientService, sizeof(clientService));
-	if (result == SOCKET_ERROR)
-	{
-		setError(SocketError::CONNECT_ERROR);
-		return false;
-	}
-
-	_status = SocketStatus::CONNECTED;
-	return true;
-}
-
-bool Socket::server(int16_t port)
-{
-	assert(_status == SocketStatus::DISCONNECTED);
-
-	sockaddr_in clientService;
-	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
-	clientService.sin_port = htons(port);
-
-	int result = ::bind(_socket, (SOCKADDR*)&clientService, sizeof(clientService));
-	if (result == SOCKET_ERROR)
-	{
-		setError(SocketError::BIND_ERROR);
-		return false;
-	}
-
-	result = ::listen(_socket, 1024);
-	if (result == SOCKET_ERROR)
-	{
-		setError(SocketError::LISTEN_ERROR);
-		return false;
-	}
-
-	_status = SocketStatus::SERVING;
-	return true;
-}
-
-bool Socket::accept()
-{
-	//::accept()
-	return false;
-}
-
-int Socket::send(const char* buffer, int len)
-{
-	assert(_status == SocketStatus::CONNECTED);
-
-	int result = ::send(_socket, buffer, len, 0);
-
-	if (result != len)
-	{
-		setError(SocketError::SEND_ERROR);
-	}
-	else if (result == -1)
-	{
-		setError(SocketError::BROKEN_PIPE);
-	}
-
-	return result;
-}
-
 std::string Socket::recv()
 {
 	assert(_status == SocketStatus::CONNECTED);
@@ -191,3 +112,20 @@ void Socket::close()
 	}
 }
 
+int Socket::send(const char* buffer, int len)
+{
+	assert(_status == SocketStatus::CONNECTED);
+
+	int result = ::send(_socket, buffer, len, 0);
+
+	if (result != len)
+	{
+		setError(SocketError::SEND_ERROR);
+	}
+	else if (result == -1)
+	{
+		setError(SocketError::BROKEN_PIPE);
+	}
+
+	return result;
+}
