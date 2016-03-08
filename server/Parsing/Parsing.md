@@ -24,7 +24,7 @@ Login
 > NsTeST
 > [1-8] SessionID
 > *For each GameServer*
-> > ip:port:(0-9?):Server.Channel.Name
+> > ip:port:Capacity:Server.Channel.Name
 > 
 > -1.-1.-1.-1:10000.10000.4
 
