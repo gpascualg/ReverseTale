@@ -1,4 +1,4 @@
-**View from [StackEdit](https://stackedit.io/viewer#!url=https://raw.githubusercontent.com/Hack-A-Game/Propostes/master/Utopia.md) for a correct format**
+**View from [StackEdit](https://stackedit.io/viewer#!url=https://github.com/gpascualg/ReverseTale/raw/master/server/Parsing/Parsing.md) for a correct format**
 
 ------------------
 
