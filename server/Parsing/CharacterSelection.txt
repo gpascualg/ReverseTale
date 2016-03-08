@@ -1,0 +1,24 @@
+>> Login
+<< NsTeST [ID]
+   IP:PUERTO:?:SERVER.CH.Nombre 
+   -1:10000.10000.4
+
+>> [SES] [ID]
+>> [SES++] [USER]
+>> [SES++] [PASS]
+
+<< clist_start 0
+<< clist [i] Nombre 0 [SEXO] [PELO] [COLOR] 0 0 [LVL]
+<< clist_end
+
+>> [SES++] c_close
+>> [SES++] f_stash_end
+
+>> [SES++] 0
+
+CREAR PJ:
+>> + Char_NEW Nombre [SLOT] [SEXO] [PELO] [COLOR]
+
+DEL PJ:
+>> + Char_DEL [SLOT] [PASS]
+

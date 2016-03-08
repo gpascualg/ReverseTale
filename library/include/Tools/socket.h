@@ -24,6 +24,7 @@ enum class SocketStatus
 {
 	DISCONNECTED,
 	CONNECTED,
+	SERVING,
 	CLOSED,
 	ERROR
 };
@@ -34,6 +35,8 @@ enum class SocketError
 	INITIALIZATION_ERROR,
 	INSTANTIATION_ERROR,
 	CONNECT_ERROR,
+	BIND_ERROR,
+	LISTEN_ERROR,
 	SEND_ERROR,
 	RECV_ERROR,
 	BROKEN_PIPE
@@ -47,6 +50,8 @@ public:
 
 	bool setOption(int level, int option, const char* value, int valueLength);
 	bool connect(std::string ip, int16_t port);
+	bool server(int16_t port);
+	bool accept();
 
 	inline SocketStatus status() { return _status; }
 	inline SocketError error() { return _error; }

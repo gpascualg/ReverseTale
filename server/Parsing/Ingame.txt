@@ -1,0 +1,129 @@
+>> + select [SLOT]
+<< OK
+
+>> + game_start
+>> + lbs 0
+
+<< tit [NOMBRE_TITULO] [PJ]
+<< fd 0 1 0 1
+<< c_info [Nombre] - -1 -1 - [INGAME_ID] [SLOT] [SEXO] [PELO] [COLOR] 0 [LVL] 0 0 0 0 0 0
+<< equip 0 0 0.1.0.0.0 1.12.0.0.0 5.8.0.0.0
+<< lev 1(pj) 0 1(prof?) 0 300(xp pj?) 2200(xp prof?) 0 2(sig?)
+<< stat 221(hp-actual) 221(hp-max) 60(mp-actual) 60(mp-max) 0 1024
+<< ski 200 201 200 201 209
+<< at [INGAME_ID] 145 25 1 2 0 6 1
+<< c_map 0 145 1
+<< sc 0 0 30 38 30 4 70 1 0 32 34 41 2 70 0 17 34 19 34 17 0 0 0 0
+<< cond 1 [INGAME_ID] 0 0 11
+<< pairy 1 [INGAME_ID] 0 0 0 0
+<< rsfi 1 1 0 9 0 9
+<< rank_cool 0 0 18000
+<< src 0 0 0 0 0 0 0
+<< bn [ID_char] [MSG]
+<< exts 0 48 48 48
+<< gidx 1 [INGAME_ID] -1 - 0
+<< mlinfo 3800 2000 100 0 0 10 0 [MSG]
+<< p_clear
+<< sc_p_stc 0
+<< p_init 0
+<< zzim
+<< twk 1 [INGAME_OD] [USER] [PJ] [??? str]
+<< scrip 1 27
+<< qstlist 5.1997.1997.19.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+<< target 57 149 1 1997
+<< sqst 1..3 0000++++++
+
+>> + npinfo 0
+>> sqst 4..6 0000+++++++
+
+<< fs 0
+<< p_clear
+
+<< inv 0..7 (2 = 0.2024.10 1.2081.1)
+<< gold 0 0
+<< qslot [0-9 inc] 1.1.1 0.20
+
+
+EQUIPAR DESDE 8:
+>> + wear [SLOT_INV] 0
+
+>> cond 1 [INGAME_ID] 0 0 11
+>> stat 221 221 60 60 0 1024
+>> sc 0 0 30 38 30 4 70 1 0 32 34 41 2 70 0 17 34 19 34 17 0 0 0 0
+>> equip 0 0 0.1.0.0.0 1.12.0.0.0 5.8.0.0.0
+>> ivn 0 8.-1.0.0.0
+
+COMANDO: SC
+<< sc 0 [AtaqueNivel] [AtaqueMin] [IndiceAcierto] [AtaqueMax] [ProbCrit] [DañoCrit]
+	[NivelBat?] [LargaDistancia] [DañoDistMin] [DañoDistMax]
+	[IndiceAciertoDist] [ProbCritDist] [DañoCritDist]
+	[Rechazo] [EsquivarMin] [EsquivarMax] [EsquivarDistMin]
+	[EsquivarDistMax] [DefensaMag] [Fuego] [Luz] [Agua] [Tinie]
+
+COMANDO: EQUIP
+<< equip 0 0 [POS.ID.0.0]
+
+SPAWN:
+>> in 1 Gaudino - 707630 28 3 2 0 0 0 123 2 215.169.143.79.227.4130.4242.4250 10 0 100 1 -1 4 2 0 41 0 0 35 36 -1 - 13 0 0 0 0 33 0 0 0 10
+
+MESNAJE EN GRANDE:
+<< msg 0 [MSG
+
+
+DESEQUIPAR:
+>> 63332 remove 0 0
+
+<< cond 1 736594 0 0 11
+<< stat 221 221 60 60 0 1024
+<< sc 0 0 10 10 10 0 0 1 0 32 34 41 2 70 0 17 34 19 34 17 0 0 0 0
+<< ivn 0 0.1.0.0.0
+<< equip 0 0 [... items equipados] 1.12.0.0.0 5.8.0.0.0
+
+EQUIPAR:
+>> 63332 wear 0 0
+
+<< cond [1=OK,0=NO] [INGAME_ID] 0 0 11
+<< stat 221 221 60 60 0 1024
+<< sc 0 0 30 38 30 4 70 1 0 32 34 41 2 70 0 17 34 19 34 17 0 0 0 0
+<< equip 0 0 0.1.0.0.0 1.12.0.0.0 5.8.0.0.0
+<< ivn 0 0.-1.0.0.0
+
+
+MOVER INVENTORIO:
+>> + mvi 0 0 [DESDE] [DONDE]
+
+<< ivn 0 0.-1.0.0.0 [POS.ID.0.0] ID < 0 -> Quita
+<< ivn 0 8.1.0.0.0  [POS.ID.0.0] ID > 0 -> Pone
+
+
+COMANDO LEV (subida exp):
+<< lev 1(pj) 0   1(prof?) 0   300(xp pj?) 2200(xp prof?) 0 2(sig?)
+<< lev 1     180 (xp actual) 1        360(exp actual prof) 300 (xp subir nivel)         2200(xp+prof)           0 2
+<< lev [LVL] [XP] [LVL_PROF] [XP_PROF] [XP_NEXT_LEVEL] [XP_NEXT_PROF] 0 [NEXT_LVL]
+
+EMOTICONOS:
+>> eff 1 [INGAME_ID] [ID]
+<< SIN CONFIRMACION
+
+REST:
+rest 1 [INGAME_ID] 1
+
+SELECCIONADO:
+>> + ncif [TIPO] [INGAME_ID]
+	TIPO 1: Player
+	TIPO 2: NPC
+	TIPO 3: Mob
+
+ATACANDO:
+>> + u_s 1 [TIPO] [INGAME_ID]
+
+
+MOVIMIENTO / COORDENADAS:
+<< at [INGAME_ID] [MAPA_ID] [X] [Y] 2 0 6 1
+<< c_map 0 [MAPA_ID] 1
+
+<< at [INGAME_ID] [MAPA_ID] [X] [Y] 2 0 0 1
+<< c_map 0 [MAPA_ID] 1 // Canvio de mapa!
+
+>> 8429 walk 61 139 0 11
+>> 8430 walk 62 140 1 11

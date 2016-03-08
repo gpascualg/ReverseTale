@@ -47,18 +47,31 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 		packet = gFactory->make(PacketType::SERVER_GAME, &session, std::string(buf, len));
 	}
 
-	printf("\nSend:\n");
 	auto packets = packet->decrypt();
-	for (std::string data : packets)
+	for (auto packet : packets)
 	{
-		std::cout << ">> " << data << std::endl;
+		if (!packet.empty())
+		{
+			auto tokens = Utils::tokenize(packet);
+
+			if (tokens.size() < 2)
+			{
+				continue;
+			}
+
+			std::cout << tokens[1] << std::endl;
+			if (tokens[1] == "u_s" || tokens[1] == "ncif" || tokens[1] == "walk")
+			{
+				printf("\nSend:\n");
+				std::cout << ">> " << packet << std::endl;
+			}
+		}
 	}
 
 	// Set session after decrypting
 	if (!login && session.id() == -1)
 	{
 		auto tokens = Utils::tokenize(packets[0]);
-
 		session.setID(sessionID);
 		session.setAlive(Utils::decimal_str2hex(tokens[0]));
 	}
@@ -89,12 +102,31 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 		packet = gFactory->make(PacketType::CLIENT_GAME, &session, std::string(buf, ret));
 	}
 
-	printf("\nRecv:\n");
 	auto packets = packet->decrypt();
+	for (std::string packet : packets)
+	{
+		if (!packet.empty())
+		{
+			auto tokens = Utils::tokenize(packet);
+			if (tokens.size() < 1)
+			{
+				continue;
+			}
+
+			if (tokens[0] == "lev" || tokens[0] == "fd" || tokens[0] == "at" || tokens[0] == "c_map")
+			{
+				printf("\nRecv:\n");
+				std::cout << "<< " << packet << std::endl;
+			}
+		}
+	}
+/*
+	printf("\nRecv:\n");
 	for (std::string data : packets)
 	{
-		std::cout << ">> " << data << std::endl;
+		std::cout << "<< " << data << std::endl;
 	}
+*/
 
 	if (login)
 	{

@@ -97,6 +97,39 @@ bool Socket::connect(std::string ip, int16_t port)
 	return true;
 }
 
+bool Socket::server(int16_t port)
+{
+	assert(_status == SocketStatus::DISCONNECTED);
+
+	sockaddr_in clientService;
+	clientService.sin_family = AF_INET;
+	clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
+	clientService.sin_port = htons(port);
+
+	int result = ::bind(_socket, (SOCKADDR*)&clientService, sizeof(clientService));
+	if (result == SOCKET_ERROR)
+	{
+		setError(SocketError::BIND_ERROR);
+		return false;
+	}
+
+	result = ::listen(_socket, 1024);
+	if (result == SOCKET_ERROR)
+	{
+		setError(SocketError::LISTEN_ERROR);
+		return false;
+	}
+
+	_status = SocketStatus::SERVING;
+	return true;
+}
+
+bool Socket::accept()
+{
+	//::accept()
+	return false;
+}
+
 int Socket::send(const char* buffer, int len)
 {
 	assert(_status == SocketStatus::CONNECTED);
