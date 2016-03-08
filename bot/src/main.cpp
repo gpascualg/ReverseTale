@@ -1,5 +1,5 @@
-// Streaming23_02_16.cpp : Defines the exported functions for the DLL application.
-//
+#include <iostream>
+#include <thread>
 
 #include "xHacking.h"
 #include "Utilities/Utilities.h"
@@ -13,6 +13,12 @@
 
 using namespace xHacking;
 using namespace Net;
+
+
+bool running;
+std::thread inputThread;
+std::vector<std::string> filterSend;
+std::vector<std::string> filterRecv;
 
 
 DWORD baseAddress = 0x68120C;
@@ -59,8 +65,8 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 				continue;
 			}
 
-			std::cout << tokens[1] << std::endl;
-			if (tokens[1] == "u_s" || tokens[1] == "ncif" || tokens[1] == "walk")
+			//std::cout << tokens[1] << std::endl;
+			if (std::find(filterSend.begin(), filterSend.end(), tokens[1]) != filterSend.end())
 			{
 				printf("\nSend:\n");
 				std::cout << ">> " << packet << std::endl;
@@ -113,20 +119,13 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 				continue;
 			}
 
-			if (tokens[0] == "lev" || tokens[0] == "fd" || tokens[0] == "at" || tokens[0] == "c_map")
+			if (std::find(filterRecv.begin(), filterRecv.end(), tokens[0]) != filterRecv.end())
 			{
 				printf("\nRecv:\n");
 				std::cout << "<< " << packet << std::endl;
 			}
 		}
 	}
-/*
-	printf("\nRecv:\n");
-	for (std::string data : packets)
-	{
-		std::cout << "<< " << data << std::endl;
-	}
-*/
 
 	if (login)
 	{
@@ -151,6 +150,49 @@ void Hooks()
 	recvDetour->Wait("wsock32.dll", "recv", (BYTE*)nuestro_recv);
 }
 
+void processInput()
+{
+	std::cout << "Welcome to ReverseTale-Bot, you can filter packets by issuing:" << std::endl;
+	std::cout << "\t<packetOpcode : Adds a recv for `packetOpcode`" << std::endl;
+	std::cout << "\t<-packetOpcode : Removes a recv for `packetOpcode`" << std::endl;
+	std::cout << "\t>packetOpcode : Adds a send for `packetOpcode`" << std::endl;
+	std::cout << "\t>-packetOpcode : Removes a send for `packetOpcode`" << std::endl;
+
+	while (running)
+	{
+		std::string input;
+		std::cout << "Enter Filter: ";
+		std::cin >> input;
+
+		if (input.length() > 2)
+		{
+			std::vector<<std::string>* filter;
+			bool recv = input[0] == '<';
+			bool rem = input[1] == '-';
+
+			if (recv)
+			{
+				filter = &filterRecv;
+			}
+			else
+			{
+				filter = &filterSend;
+			}
+
+			if (rem)
+			{
+				std::string filter = input.substr(2);
+				vec.erase(std::remove(vec.begin(), vec.end(), filter), vec.end());
+			}
+			else
+			{
+				std::string filter = input.substr(1);
+				vec.push_back(filter);
+			}
+		}
+	}
+}
+
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, DWORD reserved)
 {
 	if (reason == DLL_PROCESS_ATTACH)
@@ -160,6 +202,14 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, DWORD reserved)
 
 		// Call our function
 		Hooks();
+
+		running = true;
+		inputThread = std::thread(processInput);
+	}
+	else if (reason == DLL_PROCESS_DETTACH)
+	{
+		running = false;
+		inputThread.join();
 	}
 
 	return true;
