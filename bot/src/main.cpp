@@ -15,15 +15,21 @@ using namespace xHacking;
 using namespace Net;
 
 
+bool threadCreated = false;
 bool running;
 std::thread inputThread;
 std::vector<std::string> filterSend;
 std::vector<std::string> filterRecv;
+bool showAsHex = false;
 
 
 DWORD baseAddress = 0x68120C;
 std::string sessionID;
 Utils::Game::Session session;
+
+
+void processInput();
+
 
 inline bool isLogin()
 {
@@ -40,6 +46,17 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	
 	__asm PUSHAD;
 	__asm PUSHFD;
+
+
+	if (!threadCreated)
+	{
+		threadCreated = true;
+		std::cout << "Initializing thread" << std::endl;
+		running = true;
+		inputThread = std::thread(processInput);
+		std::cout << "Done, joining" << std::endl;
+	}
+
 
 	bool login = isLogin();
 	Packet* packet = nullptr;
@@ -69,7 +86,18 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 			if (std::find(filterSend.begin(), filterSend.end(), tokens[1]) != filterSend.end())
 			{
 				printf("\nSend:\n");
-				std::cout << ">> " << packet << std::endl;
+				if (!showAsHex)
+				{
+					std::cout << "<< " << packet << std::endl;
+				}
+				else
+				{
+					for (int i = 0; i < packet.length(); ++i)
+					{
+						printf("%.2X ", (uint8_t)packet[i]);
+					}
+					printf("\n");
+				}
 			}
 		}
 	}
@@ -122,7 +150,18 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 			if (std::find(filterRecv.begin(), filterRecv.end(), tokens[0]) != filterRecv.end())
 			{
 				printf("\nRecv:\n");
-				std::cout << "<< " << packet << std::endl;
+				if (!showAsHex)
+				{
+					std::cout << "<< " << packet << std::endl;
+				}
+				else
+				{
+					for (int i = 0; i < packet.length(); ++i)
+					{
+						printf("%.2X ", (uint8_t)packet[i]);
+					}
+					printf("\n");
+				}
 			}
 		}
 	}
@@ -166,28 +205,36 @@ void processInput()
 
 		if (input.length() > 2)
 		{
-			std::vector<<std::string>* filter;
+			if (input.compare("toggle_hex") == 0)
+			{
+				showAsHex = !showAsHex;
+				continue;
+			}
+
+			std::vector<std::string>* filterVec;
 			bool recv = input[0] == '<';
 			bool rem = input[1] == '-';
 
+			std::cout << "Recv: " << recv << " Rem: " << rem << " -- " << input << std::endl;
+
 			if (recv)
 			{
-				filter = &filterRecv;
+				filterVec = &filterRecv;
 			}
 			else
 			{
-				filter = &filterSend;
+				filterVec = &filterSend;
 			}
 
 			if (rem)
 			{
-				std::string filter = input.substr(2);
-				vec.erase(std::remove(vec.begin(), vec.end(), filter), vec.end());
+				//std::string filter = input.substr(2);
+				//filterVec->erase(std::remove(filterVec->begin(), filterVec->end(), filter), filterVec->end());
 			}
 			else
 			{
 				std::string filter = input.substr(1);
-				vec.push_back(filter);
+				filterVec->push_back(filter);
 			}
 		}
 	}
@@ -202,11 +249,8 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, DWORD reserved)
 
 		// Call our function
 		Hooks();
-
-		running = true;
-		inputThread = std::thread(processInput);
 	}
-	else if (reason == DLL_PROCESS_DETTACH)
+	else if (reason == DLL_PROCESS_DETACH)
 	{
 		running = false;
 		inputThread.join();

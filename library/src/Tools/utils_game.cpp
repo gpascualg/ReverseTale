@@ -43,5 +43,16 @@ namespace Utils
 			++_alive;
 			return next;
 		}
+
+		bool Session::check_alive(std::string& alive)
+		{
+			if (_alive + 1 == Utils::decimal_str2hex(alive))
+			{
+				++_alive;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }

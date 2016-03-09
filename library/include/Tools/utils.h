@@ -38,6 +38,7 @@ namespace Utils
 			void setAlive(uint32_t alive);
 
 			uint32_t alive();
+			bool check_alive(std::string& alive);
 
 			inline uint32_t id() { return _idHex; }
 			inline uint8_t number() { return _number; }

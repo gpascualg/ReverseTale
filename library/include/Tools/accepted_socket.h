@@ -6,25 +6,29 @@
 template <typename DataType>
 class AcceptedSocket : public Socket
 {
+	template <typename T>
 	friend class ServerSocket;
+
 public:
-	inline void setUserData(DataType data);
-	inline DataType data();
+	void setUserData(DataType data)
+	{
+		_userData = data;
+	}
+
+	DataType data()
+	{
+		return _userData;
+	}
+
 
 private:
-	AcceptedSocket();
+	AcceptedSocket()
+	{}
+
 
 private:
 	sockaddr_in _address;
-	DataType* _userData;
+	DataType _userData;
 };
 
-void AcceptedSocket::setUserData(DataType data)
-{
-	_userData = data;
-}
 
-DataType AcceptedSocket::data()
-{
-	return _userData;
-}

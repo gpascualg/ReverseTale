@@ -8,7 +8,9 @@ Socket::Socket():
 	_socket(SOCKET_ERROR),
 	_status(SocketStatus::DISCONNECTED),
 	_error(SocketError::NONE)
-{}
+{
+	_buf = new char[8192];
+}
 
 Socket::Socket(int family, int type, int protocol) :
 	_socket(SOCKET_ERROR),
@@ -63,7 +65,7 @@ Socket::~Socket()
 
 bool Socket::setOption(int level, int option, const char* value, int valueLength)
 {
-	assert(_status == SocketStatus::DISCONNECTED);
+	//assert(_status == SocketStatus::DISCONNECTED);
 
 	int result = setsockopt(_socket, level, option, value, valueLength);
 	return result != SOCKET_ERROR;

@@ -144,6 +144,12 @@ namespace Net
 		_decrypter = decrypter;
 	}
 
+	Packet& Packet::operator<<(uint8_t chr)
+	{
+		_packet += chr;
+		return *this;
+	}
+
 	Packet& Packet::operator<<(char* str)
 	{
 		return *this << std::string(str);

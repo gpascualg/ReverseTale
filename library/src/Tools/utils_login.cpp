@@ -50,23 +50,29 @@ namespace Utils
 			int i = seedRandom(0x17);
 			std::string password;
 			password.reserve(hash.length() * 4 + 3); // 4bytes per letter + 3 random
-
-			if (hash.length() % 2)
+			
+			if (hash.length() % 2 == 0)
 			{
 				hash = hash.substr(2);
 			}
 			else
 			{
-				hash = hash.substr(3);
+				while (hash.length() % 4 != 0)
+				{
+					hash = hash.substr(1);
+				}
 			}
 
-			for (int n = 0; n < password.length(); n += 2)
+			for (int n = 0; n < hash.length() - 1; n += 4)
 			{
-				uint8_t high = hash[n];
-				uint8_t low = hash[n + 1];
+				uint8_t high = hash[n + 1];
+				uint8_t low = hash[n + 3];
 
-				char chr = (high & 0xF) << 4 | (low & 0x0F);
-				password += chr;
+				char tmp[] = { 0, 0, 0 };
+				tmp[0] = high;
+				tmp[1] = low;
+
+				password += (uint8_t)strtol(tmp, NULL, 16);
 			}
 
 			return password;
