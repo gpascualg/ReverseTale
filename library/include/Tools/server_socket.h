@@ -2,8 +2,10 @@
 
 #include "Tools/socket.h"
 
+#include <cassert>
+
 #ifdef _WIN32
-typedef int socklen_t;
+	typedef int socklen_t;
 #endif
 
 template <typename DataType>

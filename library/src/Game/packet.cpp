@@ -150,7 +150,7 @@ namespace Net
 		return *this;
 	}
 
-	Packet& Packet::operator<<(char* str)
+	Packet& Packet::operator<<(const char* str)
 	{
 		return *this << std::string(str);
 	}

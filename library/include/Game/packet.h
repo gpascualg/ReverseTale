@@ -86,7 +86,7 @@ namespace Net
 		void setCrypto(Crypto::Base::Encrypter* crypter, Crypto::Base::Decrypter* decrypter);
 
 		Packet& operator<<(uint8_t chr);
-		Packet& operator<<(char* str);
+		Packet& operator<<(const char* str);
 		Packet& operator<<(Packet& packet);
 		Packet& operator<<(std::string& str);
 		Packet& operator<<(std::string&& str);
