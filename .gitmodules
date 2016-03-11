@@ -4,3 +4,12 @@
 [submodule "dep/inih"]
 	path = dep/inih
 	url = https://github.com/benhoyt/inih.git
+[submodule "dep/mongo-c-driver"]
+	path = dep/mongo-c-driver
+	url = https://github.com/mongodb/mongo-c-driver.git
+[submodule "dep/libbson"]
+	path = dep/libbson
+	url = https://github.com/mongodb/libbson.git
+[submodule "dep/mongo-cxx-driver"]
+	path = dep/mongo-cxx-driver
+	url = https://github.com/mongodb/mongo-cxx-driver.git

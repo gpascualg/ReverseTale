@@ -1,0 +1,19 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3805eaa..9273f3d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,7 +15,13 @@ option(ENABLE_EXAMPLES "Build MongoDB C Driver examples." ON)
+ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/build/cmake)
+ 
+ include(InstallRequiredSystemLibraries)
+-include(FindBSON REQUIRED)
++
++#include(FindBSON REQUIRED)
++set(BSON_INCLUDE_DIR
++    ${CMAKE_SOURCE_DIR}/dep/libbson/src/bson
++    ${CMAKE_BINARY_DIR}/dep/libbson/src/bson
++)
++set(BSON_LIBRARIES bson_static)
+ 
+ if (ENABLE_SSL)
+     include(FindOpenSSL)
