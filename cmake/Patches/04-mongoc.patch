@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3805eaa..9273f3d 100644
+index 3805eaa..b8d4e7b 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -15,7 +15,13 @@ option(ENABLE_EXAMPLES "Build MongoDB C Driver examples." ON)
@@ -13,7 +13,35 @@ index 3805eaa..9273f3d 100644
 +    ${CMAKE_SOURCE_DIR}/dep/libbson/src/bson
 +    ${CMAKE_BINARY_DIR}/dep/libbson/src/bson
 +)
-+set(BSON_LIBRARIES bson_static)
++set(BSON_LIBRARIES bson)
  
  if (ENABLE_SSL)
      include(FindOpenSSL)
+@@ -84,7 +90,7 @@ include_directories("${PROJECT_BINARY_DIR}/src/mongoc")
+ include_directories("${SOURCE_DIR}/src/mongoc")
+ include_directories(${BSON_INCLUDE_DIR})
+ 
+-set(LIBS ${LIBS} ${BSON_LIBRARIES})
++#set(LIBS ${LIBS} ${BSON_LIBRARIES})
+ 
+ if (UNIX AND NOT APPLE)
+    set(LIBS ${LIBS} rt)
+@@ -247,8 +253,8 @@ endif()
+ add_library(mongoc_shared SHARED ${MONGOC_SHARED_SOURCES} ${HEADERS})
+ add_library(mongoc_static STATIC ${SOURCES} ${HEADERS})
+ 
+-target_link_libraries(mongoc_shared ${LIBS})
+-target_link_libraries(mongoc_static ${LIBS})
++target_link_libraries(mongoc_shared ${LIBS} ${BSON_LIBRARIES}_shared)
++target_link_libraries(mongoc_static ${LIBS} ${BSON_LIBRARIES}_static)
+ 
+ set_target_properties(mongoc_shared PROPERTIES COMPILE_DEFINITIONS "MONGOC_COMPILATION")
+ set_target_properties(mongoc_static PROPERTIES COMPILE_DEFINITIONS "MONGOC_COMPILATION")
+@@ -259,6 +265,7 @@ set_target_properties(mongoc_static PROPERTIES VERSION ${MONGOC_VERSION} SOVERSI
+ set_target_properties(mongoc_shared PROPERTIES OUTPUT_NAME "mongoc-${MONGOC_API_VERSION}" PREFIX "lib")
+ set_target_properties(mongoc_static PROPERTIES OUTPUT_NAME "mongoc-static-${MONGOC_API_VERSION}")
+ 
++
+ function(mongoc_add_test test use_shared)
+    if (ENABLE_TESTS)
+       add_executable(${test} ${ARGN})

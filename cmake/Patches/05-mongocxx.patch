@@ -55,7 +55,7 @@ index 884da09..5d44cbd 100644
      add_custom_command(TARGET run-examples POST_BUILD COMMAND ${EXAMPLE_EXECUTABLE})
  endforeach(EXAMPLE)
 diff --git a/src/bsoncxx/CMakeLists.txt b/src/bsoncxx/CMakeLists.txt
-index 7a38a89..923e954 100644
+index 7a38a89..593e00c 100644
 --- a/src/bsoncxx/CMakeLists.txt
 +++ b/src/bsoncxx/CMakeLists.txt
 @@ -64,7 +64,12 @@ set(BSONCXX_HEADER_INSTALL_DIR "include/bsoncxx/${BSONCXX_INLINE_NAMESPACE}" CAC
@@ -68,7 +68,7 @@ index 7a38a89..923e954 100644
 +    ${CMAKE_SOURCE_DIR}/dep/libbson/src/bson
 +    ${CMAKE_BINARY_DIR}/dep/libbson/src/bson
 +)
-+set(LIBBSON_LIBRARIES bson_static)
++set(LIBBSON_LIBRARIES bson)
  
  add_subdirectory(third_party)
  add_subdirectory(config)
@@ -83,6 +83,27 @@ index 7a38a89..923e954 100644
  )
  
  link_directories(${LIBBSON_LIBRARY_DIRS})
+@@ -121,7 +126,8 @@ add_library(bsoncxx SHARED
+     ${bsoncxx_sources}
+ )
+ 
+-set(bsoncxx_libs ${LIBBSON_LIBRARIES})
++set(bsoncxx_libs_static ${LIBBSON_LIBRARIES}_static)
++set(bsoncxx_libs_shared ${LIBBSON_LIBRARIES}_shared)
+ 
+ set_target_properties(bsoncxx PROPERTIES
+     OUTPUT_NAME bsoncxx
+@@ -151,8 +157,8 @@ elseif (BSONCXX_POLY_USE_BOOST)
+     target_include_directories(bsoncxx PUBLIC ${Boost_INCLUDE_DIRS})
+ endif()
+ 
+-target_link_libraries(bsoncxx_static ${bsoncxx_libs})
+-target_link_libraries(bsoncxx PRIVATE ${bsoncxx_libs})
++target_link_libraries(bsoncxx_static ${bsoncxx_libs_static})
++target_link_libraries(bsoncxx PRIVATE ${bsoncxx_libs_shared})
+ 
+ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+     DESTINATION ${BSONCXX_HEADER_INSTALL_DIR}
 diff --git a/src/bsoncxx/test/CMakeLists.txt b/src/bsoncxx/test/CMakeLists.txt
 index d1ea051..538ba52 100644
 --- a/src/bsoncxx/test/CMakeLists.txt
@@ -97,7 +118,7 @@ index d1ea051..538ba52 100644
  
  add_executable(test_bson
 diff --git a/src/mongocxx/CMakeLists.txt b/src/mongocxx/CMakeLists.txt
-index 6b89b42..c5800ab 100644
+index 6b89b42..1fa64e3 100644
 --- a/src/mongocxx/CMakeLists.txt
 +++ b/src/mongocxx/CMakeLists.txt
 @@ -16,11 +16,21 @@ project(MONGOCXX)
@@ -110,7 +131,7 @@ index 6b89b42..c5800ab 100644
 +    ${CMAKE_SOURCE_DIR}/dep/libbson/src/bson
 +    ${CMAKE_BINARY_DIR}/dep/libbson/src/bson
 +)
-+set(LIBBSON_LIBRARIES bson_static)
++set(LIBBSON_LIBRARIES bson)
  
  set(LIBMONGOC_REQUIRED_VERSION 1.3.2)
  set(LIBMONGOC_REQUIRED_ABI_VERSION 1.0)
@@ -120,7 +141,7 @@ index 6b89b42..c5800ab 100644
 +    ${CMAKE_SOURCE_DIR}/dep/mongo-c-driver/src/mongoc
 +    ${CMAKE_BINARY_DIR}/dep/mongo-c-driver/src/mongoc
 +)
-+set(LIBMONGOC_LIBRARIES mongoc_static)
++set(LIBMONGOC_LIBRARIES mongoc)
  
  # Update these as needed.
  # TODO: read from file
@@ -135,3 +156,20 @@ index 6b89b42..c5800ab 100644
  )
  
  link_directories(
+@@ -155,11 +165,12 @@ generate_export_header (mongocxx
+     STATIC_DEFINE MONGOCXX_STATIC
+ )
+ 
+-set(mongocxx_libs ${LIBMONGOC_LIBRARIES} ${LIBBSON_LIBRARIES})
++set(mongocxx_libs_static ${LIBMONGOC_LIBRARIES}_static ${LIBBSON_LIBRARIES}_static)
++set(mongocxx_libs_shared ${LIBMONGOC_LIBRARIES}_shared ${LIBBSON_LIBRARIES}_shared)
+ 
+-target_link_libraries(mongocxx_static bsoncxx_static ${mongocxx_libs})
+-target_link_libraries(mongocxx_mocked bsoncxx_static ${mongocxx_libs})
+-target_link_libraries(mongocxx PUBLIC bsoncxx PRIVATE ${mongocxx_libs})
++target_link_libraries(mongocxx_static bsoncxx_static ${mongocxx_libs_static})
++target_link_libraries(mongocxx_mocked bsoncxx_static ${mongocxx_libs_static})
++target_link_libraries(mongocxx PUBLIC bsoncxx PRIVATE ${mongocxx_libs_shared})
+ 
+ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+     DESTINATION ${MONGOCXX_HEADER_INSTALL_DIR}
