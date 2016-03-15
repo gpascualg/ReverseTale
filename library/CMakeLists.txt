@@ -12,6 +12,14 @@ set(Library_SOURCES
 
 include_directories(${CMAKE_SOURCE_DIR}/dep/xHacking/include)
 
+find_package(Boost)
+
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIR})
+else()
+  include_directories("${CMAKE_SOURCE_DIR}/dep/threadpool11/ext/include")
+endif()
+
 if (NOT ${DEBUG})
         add_definitions(-DNDEBUG)
 endif()

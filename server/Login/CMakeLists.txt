@@ -8,10 +8,12 @@ set(LoginServer_SOURCES
 
 include_directories(
 	${CMAKE_BINARY_DIR}
-    ${PROJECT_SOURCE_DIR}/../common/src
+    ${CMAKE_SOURCE_DIR}/server/common/src
 	${CMAKE_SOURCE_DIR}/dep/inih/cpp
     ${CMAKE_SOURCE_DIR}/dep/threadpool11/threadpool11/include
+	
 	${CMAKE_SOURCE_DIR}/dep/mongo-cxx-driver/src
+	${CMAKE_BINARY_DIR}/dep/mongo-cxx-driver/src
 )
 
 find_package(Boost)
@@ -26,6 +28,8 @@ if (NOT ${DEBUG})
 	add_definitions(-DNDEBUG)
 endif()
 
+add_definitions(-DBSONCXX_POLY_USE_BOOST)
+
 if (MSVC)
 	set(SOCKET_LIB ws2_32)
 else()
@@ -33,7 +37,7 @@ else()
 endif()
 
 add_executable(ReverseTale-LoginServer ${LoginServer_SOURCES})
-target_link_libraries(ReverseTale-LoginServer ${SOCKET_LIB} inih ReverseTale-Library ReverseTale-CommonServer)
+target_link_libraries(ReverseTale-LoginServer ${SOCKET_LIB} inih ReverseTale-Library ReverseTale-CommonServer mongocxx_static threadpool11)
 
 set_property(TARGET ReverseTale-LoginServer PROPERTY CXX_STANDARD 11)
 target_compile_features(ReverseTale-LoginServer PRIVATE cxx_decltype cxx_nullptr cxx_variadic_templates)

@@ -107,18 +107,19 @@ void Socket::setError(SocketError error)
 
 void Socket::close()
 {
-	if (_status == SocketStatus::CONNECTED)
+	if (_status == SocketStatus::CONNECTED || _status == SocketStatus::CLOSING)
 	{
 		closesocket(_socket);
 		_status = SocketStatus::CLOSED;
 	}
 }
 
-int Socket::send(const char* buffer, int len)
+int Socket::send(const std::string& buffer)
 {
-	assert(_status == SocketStatus::CONNECTED);
+	assert(_status == SocketStatus::CONNECTED || _status == SocketStatus::CLOSING);
 
-	int result = ::send(_socket, buffer, len, 0);
+	int len = buffer.length();
+	int result = ::send(_socket, buffer.c_str(), len, 0);
 
 	if (result != len)
 	{

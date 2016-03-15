@@ -3,12 +3,21 @@
 #include <sstream>
 #include <time.h>
 
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
+
+#include <mongocxx/client.hpp>
+#include <mongocxx/options/find.hpp>
+#include <mongocxx/instance.hpp>
+#include <mongocxx/uri.hpp>
+
 #include <Cryptography/login.h>
 #include <Cryptography/game.h>
 #include <Game/packet.h>
 #include <Tools/server_socket.h>
 #include <Tools/accepted_socket.h>
 #include <Tools/utils.h>
+#include <reactor.h>
 
 #include <INIReader.h>
 
@@ -28,11 +37,67 @@
 
 
 using namespace Net;
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::open_document;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::finalize;
 
-class Client
+
+mongocxx::v_noabi::database db;
+
+class Client : public AcceptedSocket
 {
 public:
 	inline Utils::Game::Session* session() { return &_session; }
+
+	void onRead(std::string packet)
+	{
+		Packet* loginPacket = gFactory->make(PacketType::SERVER_LOGIN, packet);
+		auto packets = loginPacket->decrypt();
+		for (auto data : packets)
+		{
+			std::cout << ">> " << data << std::endl;
+		}
+
+		auto tokens = Utils::tokenize(packets[0]);
+		std::string& user = tokens[2];
+		std::string& pass = tokens[3];
+		pass = Utils::Login::decryptPass(pass);
+
+		Packet* gameServers = gFactory->make(PacketType::SERVER_LOGIN);
+
+		std::cout << "Try log as ." << user << ". ." << pass << "." << std::endl;
+
+		bsoncxx::builder::stream::document filter_builder;
+		filter_builder << "_id" << user << "password" << pass;
+		if (db["users"].count(filter_builder.view()) > 0)
+		{
+
+			*gameServers << "NsTeST " << "12345" << " ";
+			*gameServers << "127.0.0.1:4006:0:1.1.Prueba ";
+			*gameServers << "127.0.0.1:4007:4:1.2.Prueba ";
+			*gameServers << "127.0.0.1:4008:8:1.3.Prueba ";
+			*gameServers << "127.0.0.1:4009:18:1.4.Prueba "; // < 4 = RECOMENDADO
+			*gameServers << "127.0.0.1:4010:19:1.5.Prueba "; // 4 = NORMAL
+			*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
+
+			// 0-3 (Recomendado)
+			// 4-12 (Normal)
+			// 12-18 (Derramar)
+			// 19+ (Completo)
+		}
+		else
+		{
+			*gameServers << "fail Usuario y/o contraseña incorrectos\nPrueba de nuevo!" << (uint8_t)0xA;
+		}
+
+		std::cout << "<< " << gameServers->data() << std::endl;
+
+		gameServers->send(this);
+		close();
+	}
 
 private:
 	Utils::Game::Session _session;
@@ -49,12 +114,28 @@ int main(int argc, char** argv)
 	}
 
 
-	ServerSocket<Client*> socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-	socket.serve(4005); // IP: 100007F
-	
+	ServerSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+	//socket.serve(4005); // IP: 100007F
+
+	mongocxx::instance inst{};
+	mongocxx::client conn{ mongocxx::uri{} };
+
+	db = conn["login"];
+
+	bsoncxx::builder::stream::document filter_builder2;
+	filter_builder2 << "_id" << "blipi" << "password" << "123qwe";
+	auto cursor = db["users"].find(filter_builder2.view());
+	for (auto&& doc : cursor) {
+		std::cout << bsoncxx::to_json(doc) << std::endl;
+	}
+
+	Reactor<Client> reactor(&socket, 128, 100);
+	reactor.start(4005);
+
+	/*
 	{
 		std::cout << "Accepting client" << std::endl;
-		AcceptedSocket<Client*>* client = socket.accept();
+		AcceptedSocket* client = socket.accept();
 		if (client)
 		{
 			std::cout << "Client accepted" << std::endl;
@@ -75,29 +156,31 @@ int main(int argc, char** argv)
 			std::string& pass = tokens[3];
 			pass = Utils::Login::decryptPass(pass);
 
-			std::cout << "Logged as " << user << " " << pass << std::endl;
-
 			Packet* gameServers = gFactory->make(PacketType::SERVER_LOGIN);
+			
+			std::cout << "Try log as ." << user << ". ." << pass << "." << std::endl;
 
-			if (1 == 1)
+			bsoncxx::builder::stream::document filter_builder;
+			filter_builder << "_id" << user << "password" << pass;
+			if (db["users"].count(filter_builder.view()) > 0)
 			{
+				
 				*gameServers << "NsTeST " << "12345" << " ";
 				*gameServers << "127.0.0.1:4006:0:1.1.Prueba ";
 				*gameServers << "127.0.0.1:4007:4:1.2.Prueba ";
 				*gameServers << "127.0.0.1:4008:8:1.3.Prueba ";
 				*gameServers << "127.0.0.1:4009:18:1.4.Prueba "; // < 4 = RECOMENDADO
 				*gameServers << "127.0.0.1:4010:19:1.5.Prueba "; // 4 = NORMAL
+				*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
 
 				// 0-3 (Recomendado)
 				// 4-12 (Normal)
 				// 12-18 (Derramar)
 				// 19+ (Completo)
-
-				*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
 			}
 			else
 			{
-				*gameServers << "fail Blabla" << (uint8_t)0xA;
+				*gameServers << "fail usuario y/o contraseña incorrectos" << (uint8_t)0xA;
 			}
 
 			std::cout << "<< " << gameServers->data() << std::endl;
@@ -189,6 +272,7 @@ int main(int argc, char** argv)
 
 		getchar();
 	}
+	*/
 	
 	getchar();
 	return 0;

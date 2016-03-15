@@ -3,16 +3,17 @@
 #include <iostream>
 #include <string>
 #ifdef _WIN32
-        #include <Windows.h>
+	#include <Winsock2.h>
+    #include <Windows.h>
 #else
-        #include <unistd.h>
-        #include <stdio.h>
-        #include <sys/types.h>
-        #include <sys/socket.h>
-        #include <netinet/in.h>
-        #include <arpa/inet.h>
+    #include <unistd.h>
+    #include <stdio.h>
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
 	#include <netinet/tcp.h>
-        #include <netdb.h>
+    #include <netdb.h>
 #endif
 
 
@@ -35,6 +36,7 @@ enum class SocketStatus
 	DISCONNECTED,
 	CONNECTED,
 	SERVING,
+	CLOSING,
 	CLOSED,
 	ERROR
 };
@@ -59,13 +61,13 @@ public:
 
 	bool setOption(int level, int option, const char* value, int valueLength);
 
+	inline int sock() { return _socket; }
 	inline SocketStatus status() { return _status; }
 	inline SocketError error() { return _error; }
 	
-	int send(const char* buffer, int len);
-	int send(const std::string& buffer) { return send(buffer.c_str(), buffer.length()); }
+	virtual int send(const std::string& buffer);
 	std::string recv();
-	void close();
+	virtual void close();
 
 protected:
 	Socket();

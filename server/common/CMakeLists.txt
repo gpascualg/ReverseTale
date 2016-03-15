@@ -8,6 +8,7 @@ set(CommonServer_SOURCES
 
 include_directories(
 	${CMAKE_BINARY_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/dep/inih/cpp
     ${CMAKE_SOURCE_DIR}/dep/threadpool11/threadpool11/include
 	${CMAKE_SOURCE_DIR}/dep/mongo-cxx-driver/src
