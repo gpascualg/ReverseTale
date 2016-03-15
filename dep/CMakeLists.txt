@@ -3,6 +3,10 @@ include(ExternalProject)
 
 set(BSON_DIR ${CMAKE_INSTALL_PREFIX}/dep/libbson)
 set(MONGOC_DIR ${CMAKE_INSTALL_PREFIX}/dep/mongo-c-driver)
+set(MONGOCXX_DIR ${CMAKE_INSTALL_PREFIX}/dep/mongo-cxx-driver)
+
+set(DEP_BASE ${CMAKE_BINARY_DIR}/dep/)
+SET_PROPERTY(DIRECTORY PROPERTY EP_BASE ${DEP_BASE})
 
 ExternalProject_Add(
     libbson
@@ -18,7 +22,7 @@ ExternalProject_Add(
 )
 
 ExternalProject_Add(
-    mongo-c-driver
+    mongoc
     GIT_REPOSITORY https://github.com/mongodb/mongo-c-driver.git
     GIT_TAG r1.3
     LOG_DOWNLOAD ON
@@ -29,3 +33,26 @@ ExternalProject_Add(
     UPDATE_COMMAND ""
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBSON_INCLUDE_DIR=${BSON_DIR}/include -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX:PATH=${MONGOC_DIR} -DINCLUDE_INSTALL_DIR=.
 )
+
+ExternalProject_Add(
+    mongocxx
+    GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver.git
+    #GIT_TAG r1.3
+    LOG_DOWNLOAD ON
+    LOG_CONFIGURE ON
+    LOG_BUILD ON
+    LOG_INSTALL ON
+    LOG_UPDATE ON
+    UPDATE_COMMAND ""
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DMONGOC_INCLUDE_DIR=${MONGOC_DIR}/include -DLIBBSON_INCLUDE_DIRS=${BSON_DIR} -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF -DCMAKE_INSTALL_PREFIX:PATH=${MONGOCXX_DIR} -DINCLUDE_INSTALL_DIR=.
+)
+
+message(WARNING ${CMAKE_SOURCE_DIR}/dep/mongo-cxx-driver)
+
+ExternalProject_Add_Step(
+    mongocxx
+    fix-find-bson
+    WORKING_DIRECTORY ${DEP_BASE}/Source/mongocxx/cmake
+    COMMAND git apply --whitespace=fix ${CMAKE_SOURCE_DIR}/cmake/Patches/06-mongocxx.patch
+)
+

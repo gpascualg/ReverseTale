@@ -70,13 +70,13 @@ set(ENABLE_EXAMPLES OFF)
 if (${BUILD_XHACKING})
 	add_subdirectory(dep/xHacking)
 endif()
-add_subdirectory(dep/inih)
 
 add_subdirectory(dep)
 
 #add_subdirectory(dep/libbson)
 #add_subdirectory(dep/mongo-c-driver)
-add_subdirectory(dep/mongo-cxx-driver)
+#add_subdirectory(dep/mongo-cxx-driver)
+add_subdirectory(dep/inih)
 add_subdirectory(dep/threadpool11)
 
 # ---[ Subdirectories
