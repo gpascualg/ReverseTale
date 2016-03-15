@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 2.8.0)
 # ---[ Latte project
 project(ReverseTale C CXX)
 
+# ---[ Install path
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set (CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE PATH "default install path" FORCE)
+endif()
+
 # -- [ Options
 option(BUILD_HEADLESS	"Build headless bot"	ON)
 option(BUILD_BOT		"Build bot"				ON)
@@ -66,8 +71,11 @@ if (${BUILD_XHACKING})
 	add_subdirectory(dep/xHacking)
 endif()
 add_subdirectory(dep/inih)
-add_subdirectory(dep/libbson)
-add_subdirectory(dep/mongo-c-driver)
+
+add_subdirectory(dep)
+
+#add_subdirectory(dep/libbson)
+#add_subdirectory(dep/mongo-c-driver)
 add_subdirectory(dep/mongo-cxx-driver)
 add_subdirectory(dep/threadpool11)
 

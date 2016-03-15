@@ -3,6 +3,8 @@
 #include <sstream>
 #include <time.h>
 
+#include <boost/lockfree/queue.hpp>
+
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
 
@@ -46,6 +48,34 @@ using bsoncxx::builder::stream::finalize;
 
 
 mongocxx::v_noabi::database db;
+
+class Client;
+struct ClientWork;
+
+enum class WorkType { UNDEFINED, CLIENT, DATABASE };
+
+struct AbstractWork
+{
+	Client* client;
+	WorkType type = WorkType::UNDEFINED;
+};
+
+template <typename T>
+struct DatabaseWork : public AbstractWork
+{
+	std::future<T> value;
+	WorkType type = WorkType::CLIENT;
+};
+
+template <typename T>
+struct ClientWork : public AbstractWork
+{
+	Packet* packet;
+	WorkType type = WorkType::DATABASE;
+};
+
+
+boost::lockfree::queue<AbstractWork*> asyncWork;
 
 class Client : public AcceptedSocket
 {

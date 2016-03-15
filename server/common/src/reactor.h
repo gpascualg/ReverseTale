@@ -1,4 +1,5 @@
 #include <functional>
+#include <string.h>
 
 #include <Tools/socket.h>
 #include <Tools/server_socket.h>
