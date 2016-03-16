@@ -1,0 +1,25 @@
+diff --git a/src/bson/bson-types.h b/src/bson/bson-types.h
+index cd06565..2b036cf 100644
+--- a/src/bson/bson-types.h
++++ b/src/bson/bson-types.h
+@@ -472,14 +472,20 @@ typedef struct
+ BSON_ALIGNED_END (8);
+ 
+ 
++#ifndef _WIN32
+ BSON_ALIGNED_BEGIN (8)
++#endif
+ typedef struct _bson_error_t
+ {
+    uint32_t domain;
+    uint32_t code;
+    char     message[504];
+ } bson_error_t
++#ifndef _WIN32
+ BSON_ALIGNED_END (8);
++#else
++;
++#endif
+ 
+ 
+ BSON_STATIC_ASSERT (sizeof (bson_error_t) == 512);

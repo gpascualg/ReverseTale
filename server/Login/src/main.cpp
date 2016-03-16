@@ -50,6 +50,8 @@ using bsoncxx::builder::stream::finalize;
 mongocxx::v_noabi::database db;
 
 class Client;
+
+template <typename T>
 struct ClientWork;
 
 enum class WorkType { UNDEFINED, CLIENT, DATABASE };
@@ -75,7 +77,7 @@ struct ClientWork : public AbstractWork
 };
 
 
-boost::lockfree::queue<AbstractWork*> asyncWork;
+boost::lockfree::queue<AbstractWork*> asyncWork(2048);
 
 class Client : public AcceptedSocket
 {
