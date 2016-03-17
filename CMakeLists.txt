@@ -44,28 +44,6 @@ execute_process(
 	OUTPUT_QUIET
 	ERROR_QUIET
 )
-execute_process(
-	COMMAND git apply --whitespace=fix ${PROJECT_SOURCE_DIR}/cmake/Patches/03-libbson.patch
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/libbson
-	OUTPUT_QUIET
-	ERROR_QUIET
-)
-execute_process(
-	COMMAND git apply --whitespace=fix ${PROJECT_SOURCE_DIR}/cmake/Patches/04-mongoc.patch
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/mongo-c-driver
-	OUTPUT_QUIET
-	ERROR_QUIET
-)
-execute_process(
-	COMMAND git apply --whitespace=fix ${PROJECT_SOURCE_DIR}/cmake/Patches/05-mongocxx.patch
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/dep/mongo-cxx-driver
-	OUTPUT_QUIET
-	ERROR_QUIET
-)
-
-set(ENABLE_SASL OFF)
-set(ENABLE_TESTS OFF)
-set(ENABLE_EXAMPLES OFF)
 
 # ---[ Dependencies
 if (${BUILD_XHACKING})

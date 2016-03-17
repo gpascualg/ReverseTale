@@ -28,7 +28,6 @@ if (NOT ${DEBUG})
 	add_definitions(-DNDEBUG)
 endif()
 
-#add_definitions(-DBSONCXX_POLY_USE_BOOST)
 add_definitions(-DMONGOCXX_STATIC -DBSONCXX_STATIC)
 
 if (MSVC)
@@ -49,10 +48,7 @@ add_dependencies(ReverseTale-LoginServer mongo-cxx-driver)
 
 target_link_libraries(ReverseTale-LoginServer
     ${SOCKET_LIB}
-    bson-static-1.0
-    mongoc-static-1.0
-    libmongocxx
-    libbsoncxx
+    ${LIBMONGOCXX_LIBRARIES}
     inih
     threadpool11
     ReverseTale-Library
