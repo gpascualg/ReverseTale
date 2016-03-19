@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <time.h>
+#include <functional>
 
 #include <boost/lockfree/queue.hpp>
 
@@ -37,6 +38,9 @@
 	#define Sleep sleep
 #endif
 
+#include "asyncwork.h"
+#include "client.h"
+
 
 using namespace Net;
 using bsoncxx::builder::stream::document;
@@ -51,89 +55,7 @@ mongocxx::v_noabi::database db;
 
 class Client;
 
-template <typename T>
-struct ClientWork;
-
-enum class WorkType { UNDEFINED, CLIENT, DATABASE };
-
-struct AbstractWork
-{
-	Client* client;
-	WorkType type = WorkType::UNDEFINED;
-};
-
-template <typename T>
-struct DatabaseWork : public AbstractWork
-{
-	std::future<T> value;
-	WorkType type = WorkType::CLIENT;
-};
-
-template <typename T>
-struct ClientWork : public AbstractWork
-{
-	Packet* packet;
-	WorkType type = WorkType::DATABASE;
-};
-
-
 boost::lockfree::queue<AbstractWork*> asyncWork(2048);
-
-class Client : public AcceptedSocket
-{
-public:
-	inline Utils::Game::Session* session() { return &_session; }
-
-	void onRead(std::string packet)
-	{
-		Packet* loginPacket = gFactory->make(PacketType::SERVER_LOGIN, packet);
-		auto packets = loginPacket->decrypt();
-		for (auto data : packets)
-		{
-			std::cout << ">> " << data << std::endl;
-		}
-
-		auto tokens = Utils::tokenize(packets[0]);
-		std::string& user = tokens[2];
-		std::string& pass = tokens[3];
-		pass = Utils::Login::decryptPass(pass);
-
-		Packet* gameServers = gFactory->make(PacketType::SERVER_LOGIN);
-
-		std::cout << "Try log as ." << user << ". ." << pass << "." << std::endl;
-
-		bsoncxx::builder::stream::document filter_builder;
-		filter_builder << "_id" << user << "password" << pass;
-		if (db["users"].count(filter_builder.view()) > 0)
-		{
-
-			*gameServers << "NsTeST " << "12345" << " ";
-			*gameServers << "127.0.0.1:4006:0:1.1.Prueba ";
-			*gameServers << "127.0.0.1:4007:4:1.2.Prueba ";
-			*gameServers << "127.0.0.1:4008:8:1.3.Prueba ";
-			*gameServers << "127.0.0.1:4009:18:1.4.Prueba "; // < 4 = RECOMENDADO
-			*gameServers << "127.0.0.1:4010:19:1.5.Prueba "; // 4 = NORMAL
-			*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
-
-			// 0-3 (Recomendado)
-			// 4-12 (Normal)
-			// 12-18 (Derramar)
-			// 19+ (Completo)
-		}
-		else
-		{
-			*gameServers << "fail Usuario y/o contraseña incorrectos\nPrueba de nuevo!" << (uint8_t)0xA;
-		}
-
-		std::cout << "<< " << gameServers->data() << std::endl;
-
-		gameServers->send(this);
-		close();
-	}
-
-private:
-	Utils::Game::Session _session;
-};
 
 
 int main(int argc, char** argv)
@@ -163,6 +85,21 @@ int main(int argc, char** argv)
 
 	Reactor<Client> reactor(&socket, 128, 100);
 	reactor.start(4005);
+
+	while (true)
+	{
+		while (!asyncWork.empty())
+		{
+			AbstractWork* work;
+			if (asyncWork.pop(work))
+			{
+				(*work)();
+			}
+		}
+
+		// TODO: Have a constant heartbeat
+		Sleep(100);
+	}
 
 	/*
 	{

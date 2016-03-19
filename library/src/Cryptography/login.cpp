@@ -18,7 +18,7 @@ namespace Crypto
 			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
-				for (int i = 0; i < len; ++i)
+				for (std::size_t i = 0; i < len; ++i)
 				{
 					packet[i] = packet[i] + 0x0F;
 				}
@@ -31,7 +31,7 @@ namespace Crypto
 			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
-				for (int i = 0; i < len; ++i)
+				for (std::size_t i = 0; i < len; ++i)
 				{
 					packet[i] = (packet[i] - 0x0F) ^ 0xC3;
 				}
@@ -55,7 +55,7 @@ namespace Crypto
 			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
-				for (int i = 0; i < len; ++i)
+				for (std::size_t i = 0; i < len; ++i)
 				{
 					packet[i] = (packet[i] ^ 0xC3) + 0x0F;
 				}
@@ -68,7 +68,7 @@ namespace Crypto
 			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
-				for (int i = 0; i < len; ++i)
+				for (std::size_t i = 0; i < len; ++i)
 				{
 					packet[i] = packet[i] - 0x0F;
 				}
