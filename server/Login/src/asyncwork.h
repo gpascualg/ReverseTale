@@ -13,10 +13,12 @@ enum class WorkType { UNDEFINED, CLIENT, FUTURE };
 struct AbstractWork
 {
 public:
-	void operator()()
+	bool operator()()
 	{
-		_handler(_client, this);
+		return _handler(_client, this);
 	}
+
+	inline Client* client() { return _client; }
 
 protected:
 	AbstractWork(Client* client, std::function<bool(Client*, AbstractWork*)> handler) :

@@ -51,6 +51,11 @@ namespace Utils
 			std::string password;
 			password.reserve(hash.length() * 4 + 3); // 4bytes per letter + 3 random
 			
+			if (hash.length() < 2)
+			{
+				return "";
+			}
+
 			if (hash.length() % 2 == 0)
 			{
 				hash = hash.substr(2);
@@ -61,6 +66,11 @@ namespace Utils
 				{
 					hash = hash.substr(1);
 				}
+			}
+
+			if (hash.empty())
+			{
+				return "";
 			}
 
 			for (int n = 0; n < hash.length() - 1; n += 4)

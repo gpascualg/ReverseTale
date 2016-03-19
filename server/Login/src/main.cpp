@@ -76,13 +76,6 @@ int main(int argc, char** argv)
 
 	db = conn["login"];
 
-	bsoncxx::builder::stream::document filter_builder2;
-	filter_builder2 << "_id" << "blipi" << "password" << "123qwe";
-	auto cursor = db["users"].find(filter_builder2.view());
-	for (auto&& doc : cursor) {
-		std::cout << bsoncxx::to_json(doc) << std::endl;
-	}
-
 	Reactor<Client> reactor(&socket, 128, 100);
 	reactor.start(4005);
 
@@ -93,12 +86,16 @@ int main(int argc, char** argv)
 			AbstractWork* work;
 			if (asyncWork.pop(work))
 			{
-				(*work)();
+				if (!(*work)())
+				{
+					work->client()->sendError("Input inesperado");
+					work->client()->close();
+				}
 			}
 		}
 
 		// TODO: Have a constant heartbeat
-		Sleep(100);
+		Sleep(10);
 	}
 
 	/*

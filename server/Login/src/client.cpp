@@ -30,28 +30,37 @@ extern boost::lockfree::queue<AbstractWork*> asyncWork;
 bool Client::handleReadLogin(ClientWork* work)
 {
 	auto tokens = Utils::tokenize(work->packet());
-	std::string& user = tokens[2];
-	std::string& pass = tokens[3];
-	pass = Utils::Login::decryptPass(pass);
+	if (tokens.size() >= 4)
+	{
+		std::string& user = tokens[2];
+		std::string& pass = tokens[3];
 
-	std::cout << "Try log as ." << user << ". ." << pass << "." << std::endl;
+		if (!user.empty() && pass.size() >= 3)
+		{
+			pass = Utils::Login::decryptPass(pass);
 
-	std::future<int64_t> future = ThreadPool::get()->pool()->postWork<int64_t>([user, pass]() {
-		bsoncxx::builder::stream::document filter_builder;
-		filter_builder << "_id" << user << "password" << pass;
-		return db["users"].count(filter_builder.view());
-	});
+			std::cout << "Try log as ." << user << ". ." << pass << "." << std::endl;
 
-	asyncWork.push(new FutureWork<int64_t>(this, MAKE_WORK(&Client::handleLoginResult), std::move(future)));
-	return true;
+			std::future<int64_t> future = ThreadPool::get()->pool()->postWork<int64_t>([user, pass]() {
+				bsoncxx::builder::stream::document filter_builder;
+				filter_builder << "_id" << user << "password" << pass;
+				return db["users"].count(filter_builder.view());
+			});
+
+			asyncWork.push(new FutureWork<int64_t>(this, MAKE_WORK(&Client::handleLoginResult), std::move(future)));
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Client::handleLoginResult(FutureWork<int64_t>* work)
 {
-	Packet* gameServers = gFactory->make(PacketType::SERVER_LOGIN);
 
 	if (work->get() > 0)
 	{
+		Packet* gameServers = gFactory->make(PacketType::SERVER_LOGIN);
 		*gameServers << "NsTeST " << "12345" << " ";
 		*gameServers << "127.0.0.1:4006:0:1.1.Prueba ";
 		*gameServers << "127.0.0.1:4007:4:1.2.Prueba ";
@@ -59,6 +68,9 @@ bool Client::handleLoginResult(FutureWork<int64_t>* work)
 		*gameServers << "127.0.0.1:4009:18:1.4.Prueba "; // < 4 = RECOMENDADO
 		*gameServers << "127.0.0.1:4010:19:1.5.Prueba "; // 4 = NORMAL
 		*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
+		gameServers->send(this);
+
+		std::cout << "<< " << gameServers->data() << std::endl;
 
 		// 0-3 (Recomendado)
 		// 4-12 (Normal)
@@ -67,14 +79,18 @@ bool Client::handleLoginResult(FutureWork<int64_t>* work)
 	}
 	else
 	{
-		*gameServers << "fail Usuario y/o contraseña incorrectos\nPrueba de nuevo!" << (uint8_t)0xA;
+		sendError("Usuario y/o contraseña incorrectos\nPrueba de nuevo!");
 	}
 
-	std::cout << "<< " << gameServers->data() << std::endl;
-
-	gameServers->send(this);
 	close();
 	return true;
+}
+
+void Client::sendError(std::string&& error)
+{
+	Packet* errorPacket = gFactory->make(PacketType::SERVER_LOGIN, std::string("fail ") + error);
+	*errorPacket << (uint8_t)0xA;
+	errorPacket->send(this);
 }
 
 void Client::onRead(std::string packet)
