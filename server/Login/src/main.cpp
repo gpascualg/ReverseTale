@@ -6,14 +6,6 @@
 
 #include <boost/lockfree/queue.hpp>
 
-#include <bsoncxx/builder/stream/document.hpp>
-#include <bsoncxx/json.hpp>
-
-#include <mongocxx/client.hpp>
-#include <mongocxx/options/find.hpp>
-#include <mongocxx/instance.hpp>
-#include <mongocxx/uri.hpp>
-
 #include <Cryptography/login.h>
 #include <Cryptography/game.h>
 #include <Game/packet.h>
@@ -33,26 +25,12 @@
 	#include <Tools/filesystem.h>
 #endif
 
-
-#ifndef _WIN32
-	#define Sleep sleep
-#endif
-
+#include "database.h"
 #include "asyncwork.h"
 #include "client.h"
 
 
 using namespace Net;
-using bsoncxx::builder::stream::document;
-using bsoncxx::builder::stream::open_document;
-using bsoncxx::builder::stream::close_document;
-using bsoncxx::builder::stream::open_array;
-using bsoncxx::builder::stream::close_array;
-using bsoncxx::builder::stream::finalize;
-
-
-mongocxx::v_noabi::database db;
-
 class Client;
 
 boost::lockfree::queue<AbstractWork*> asyncWork(2048);
@@ -61,23 +39,17 @@ boost::lockfree::queue<AbstractWork*> asyncWork(2048);
 int main(int argc, char** argv)
 {
 	srand((uint32_t)time(NULL));
-
 	for (int i = 0; i < (((float)rand() / RAND_MAX) + 1) * 100; ++i)
 	{
 		Utils::seedRandom(0x989680);
 	}
 
-
 	ServerSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-	//socket.serve(4005); // IP: 100007F
-
-	mongocxx::instance inst{};
-	mongocxx::client conn{ mongocxx::uri{} };
-
-	db = conn["login"];
-
 	Reactor<Client> reactor(&socket, 128, 100);
 	reactor.start(4005);
+
+	Database::initialize({}, "login");
+	assert(gPool->getActiveWorkerCount() < gPool->getWorkerCount() && "Not enought threads to continue");
 
 	while (true)
 	{
@@ -90,13 +62,16 @@ int main(int argc, char** argv)
 				{
 					work->client()->sendError("Input inesperado");
 					work->client()->close();
+					delete work;
 				}
 			}
 		}
 
 		// TODO: Have a constant heartbeat
-		Sleep(10);
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
+
+	Database::deinitialize();
 
 	/*
 	{

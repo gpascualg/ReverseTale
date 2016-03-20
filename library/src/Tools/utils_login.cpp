@@ -131,7 +131,7 @@ namespace Utils
 			packet += hex2decimal_str(seedRandom(0x989680) + 0x86111);				// 8 bytes
 			packet += std::string(" ") + username;									// username.length() + 1
 			packet += std::string(" ") + encryptPass(password);						// password.length() * 4 + 3 + 1
-			packet += std::string(" ") + hex2hex_str(seedRandom(0x989680));		// 8 bytes + 1
+			packet += std::string(" ") + hex2hex_str(seedRandom(0x989680));			// 8 bytes + 1
 			packet += 0x0B;															// 1 byte
 			packet += "0.9.3.3055 0 ";												// 13 bytes
 			packet += md5.digestString(md5_hash);									// 32 bytes
