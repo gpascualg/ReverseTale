@@ -49,7 +49,6 @@ add_dependencies(ReverseTale-CommonServer mongo-cxx-driver)
 target_link_libraries(ReverseTale-CommonServer
     ${SOCKET_LIB}
     ${LIBMONGOCXX_LIBRARIES}
-    ${SOCKET_LIB}
     inih
     ReverseTale-Library)
 

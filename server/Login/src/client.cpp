@@ -119,8 +119,6 @@ void Client::onRead(std::string packet)
 	for (auto data : packets)
 	{
 		std::cout << ">> " << data << std::endl;
-		std::function<bool(Client*, AbstractWork*)> f = MAKE_WORK(&Client::handleReadLogin);
-
 		asyncWork.push(new ClientWork(this, MAKE_WORK(&Client::handleReadLogin), data));
 	}
 }

@@ -5,9 +5,12 @@
 #include <future>
 
 
-#define MAKE_WORK(x) (bool(__thiscall Client::*)(AbstractWork*))(x)
-
 class Client;
+struct AbstractWork;
+
+using WorkType = bool(__thiscall Client::*)(AbstractWork*);
+#define MAKE_WORK(x) (WorkType)(x)
+
 
 struct AbstractWork
 {
