@@ -4,6 +4,7 @@
 #include <cassert>
 #include <list>
 #include <vector>
+#include <Tools/nstring.h>
 
 
 namespace Crypto
@@ -52,9 +53,9 @@ namespace Net
 			return _instance;
 		}
 
-		Packet* make(PacketType type, std::string data = "") { return make(type, nullptr, data); }
+		Packet* make(PacketType type, NString data = "") { return make(type, nullptr, data); }
 		Packet* make(PacketType type, Utils::Game::Session* session) { return make(type, session, ""); }
-		Packet* make(PacketType type, Utils::Game::Session* session, std::string data);
+		Packet* make(PacketType type, Utils::Game::Session* session, NString data);
 		void recycle(Packet* packet);
 
 	private:
@@ -68,7 +69,7 @@ namespace Net
 	class Packet
 	{
 	public:
-		Packet(std::string& packet);
+		Packet(NString packet);
 		Packet(int size);
 		Packet();
 		virtual ~Packet();
@@ -78,26 +79,31 @@ namespace Net
 		void finish();
 		void send(Socket* socket);
 
-		std::vector<std::string> decrypt();
+		std::vector<NString> decrypt();
 
 		void setType(PacketType type);
-		void setData(std::string data);
+		void setData(NString data);
 		void setSession(Utils::Game::Session* session);
 		void setCrypto(Crypto::Base::Encrypter* crypter, Crypto::Base::Decrypter* decrypter);
 
-		Packet& operator<<(uint8_t chr);
-		Packet& operator<<(const char* str);
-		Packet& operator<<(Packet& packet);
-		Packet& operator<<(std::string& str);
-		Packet& operator<<(std::string&& str);
+		template <typename T>
+		inline Packet& operator<<(T val)
+		{
+			_packet << val;
+			return *this;
+		}
 
-		inline const std::string& data() { return _packet; }
+		Packet& operator<<(Packet& packet);
+		Packet& operator<<(NString str);
+		//Packet& operator<<(std::string&& str);
+
+		inline const NString data() { return _packet; }
 		inline PacketType type() { return _type; }
 		inline Utils::Game::Session* session() { return _session; }
 
 	protected:
 		PacketType _type;
-		std::string _packet;
+		NString _packet;
 		bool _isCommitted;
 		bool _isFinished;
 

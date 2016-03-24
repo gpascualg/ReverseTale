@@ -21,28 +21,37 @@ NString::NString(const NString& nstring)
 {
 	_buffer = nstring._buffer;
 	_refs = nstring._refs;
-	++(*_refs);
+	*_refs = *_refs + 1;
+}
+
+NString& NString::operator= (const NString& nstring)
+{
+	_buffer = nstring._buffer;
+	_refs = nstring._refs;
+	*_refs = *_refs + 1;
 }
 
 NString::~NString()
 {
-	if (--(*_refs) == 0)
+	*_refs = *_refs - 1;
+	if (*_refs == 0)
 	{
 		delete _refs;
+		delete _buffer;
 	}
 }
 
-NString::Tokenizer& NString::tokens()
+NString::Tokenizer& NString::tokens(char delimiter)
 {
 	if (_tokenizer == nullptr)
 	{
-		_tokenizer = new Tokenizer(this);
+		_tokenizer = new Tokenizer(this, delimiter);
 	}
 
 	return *_tokenizer;
 }
 
-NString::Tokenizer::Tokenizer(NString* string)
+NString::Tokenizer::Tokenizer(NString* string, char delimiter)
 {
 	// FIXME: Evil cast from const to non-const
 	char* buffer = (char*)string->_buffer->c_str();
@@ -50,7 +59,7 @@ NString::Tokenizer::Tokenizer(NString* string)
 
 	while (*buffer)
 	{
-		if (*buffer == ' ')
+		if (*buffer == delimiter)
 		{
 			*buffer = '\0';
 			_tokens.push_back(current);

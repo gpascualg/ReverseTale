@@ -6,10 +6,10 @@ namespace Crypto
 {
 	namespace Base
 	{
-		void Phase1(std::string& packet)
+		void Phase1(NString& packet)
 		{
 			std::size_t len = packet.length();
-			std::string phase1;
+			NString phase1;
 			std::string mask(len, '0');
 
 			for (std::size_t i = 0; i < len; ++i)
@@ -44,17 +44,17 @@ namespace Crypto
 						{
 							if (!sequences)
 							{
-								phase1 += (uint8_t)(currentLen - i);
+								phase1 << (uint8_t)(currentLen - i);
 							}
 							else
 							{
-								phase1 += 0x7E;
+								phase1 << (uint8_t)0x7E;
 								--sequences;
 								++sequence_counter;
 							}
 						}
 
-						phase1 += packet[lastCounter] ^ 0xFF;
+						phase1 << (uint8_t)(packet[lastCounter] ^ 0xFF);
 						++lastCounter;
 					}
 				}
@@ -80,11 +80,11 @@ namespace Crypto
 						{
 							if (!sequences)
 							{
-								phase1 += (uint8_t)(currentLen - i) | 0x80;
+								phase1 << ((uint8_t)(currentLen - i) | 0x80);
 							}
 							else
 							{
-								phase1 += (uint8_t)(0x7E | 0x80);
+								phase1 << (uint8_t)(0x7E | 0x80);
 								--sequences;
 								++sequence_counter;
 							}
@@ -109,7 +109,7 @@ namespace Crypto
 
 						if (pair)
 						{
-							phase1 += ch << 4;
+							phase1 << (uint8_t)(ch << 4);
 						}
 						else
 						{
@@ -121,20 +121,20 @@ namespace Crypto
 				}
 			}
 
-			phase1 += (uint8_t)0xFF;
-			packet.assign(phase1);
+			phase1 <<(uint8_t)0xFF;
+			packet = phase1;
 		}
 
-		std::vector<std::string> Phase2(std::string& packet)
+		std::vector<NString> Phase2(NString& packet)
 		{
 			static uint8_t table[] = {
 				0x00, 0x20, 0x2D, 0x2E, 0x30, 0x31, 0x32, 0x33,
 				0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x0A, 0x00
 			};
 
-			std::vector<std::string> output;
+			std::vector<NString> output;
 			uint32_t packetLen = (uint32_t)packet.length();
-			std::string decrypted;
+			NString decrypted;
 
 			for (uint32_t counter = 0; counter < packetLen - 1;)
 			{
@@ -144,7 +144,7 @@ namespace Crypto
 				if (chr == 0xFF)
 				{
 					output.push_back(decrypted);
-					packet.assign(decrypted);
+					packet = decrypted;
 					decrypted = "";
 					continue;
 				}
@@ -164,14 +164,14 @@ namespace Crypto
 							high >>= 4;
 							if (high > 0x0 && high < 0xF)
 							{
-								decrypted += table[high];
+								decrypted << (uint8_t)table[high];
 								--localMax;
 							}
 
 							low &= 0x0F;
 							if (low > 0x0 && low < 0xF)
 							{
-								decrypted += table[low];
+								decrypted << (uint8_t)table[low];
 								--localMax;
 							}
 						}
@@ -187,7 +187,7 @@ namespace Crypto
 					{
 						if (counter < packetLen)
 						{
-							decrypted += packet[counter] ^ 0xFF;
+							decrypted << (uint8_t)(packet[counter] ^ 0xFF);
 							++counter;
 						}
 						--localMax;
@@ -198,7 +198,7 @@ namespace Crypto
 			if (!decrypted.empty())
 			{
 				output.push_back(decrypted);
-				packet.assign(decrypted);
+				packet = decrypted;
 			}
 
 			return output;
@@ -216,7 +216,7 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
+			void Encrypter::finish(NString& packet, Utils::Game::Session* session)
 			{
 				Crypto::Base::Phase1(packet);
 			}
@@ -225,12 +225,15 @@ namespace Crypto
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
+			std::vector<NString> Decrypter::parse(NString& packet, Utils::Game::Session* session)
 			{
 				int i = 0;
 				uint8_t chr = 0;
 				uint8_t key = session->key() + 0x40;
 				std::size_t len = packet.length();
+
+				std::vector<NString> output;
+				NString decrypted;
 
 				switch (session->number())
 				{
@@ -239,7 +242,17 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr -= key;
-							packet[i] = chr;
+
+							if (chr == 0xFF)
+							{
+								Crypto::Base::Phase2(decrypted);
+								output.push_back(decrypted);
+								decrypted = "";
+							}
+							else
+							{
+								decrypted << (uint8_t)chr;
+							}
 						}
 						break;
 
@@ -248,7 +261,17 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr += key;
-							packet[i] = chr;
+
+							if (chr == 0xFF)
+							{
+								Crypto::Base::Phase2(decrypted);
+								output.push_back(decrypted);
+								decrypted = "";
+							}
+							else
+							{
+								decrypted << (uint8_t)chr;
+							}
 						}
 						break;
 
@@ -257,7 +280,17 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr -= key;
-							packet[i] = chr ^ 0xC3;
+
+							if (chr == 0xFF)
+							{
+								Crypto::Base::Phase2(decrypted);
+								output.push_back(decrypted);
+								decrypted = "";
+							}
+							else
+							{
+								decrypted << (uint8_t)(chr ^ 0xC3);
+							}
 						}
 						break;
 
@@ -266,28 +299,40 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr += key;
-							packet[i] = chr ^ 0xC3;
+
+							if (chr == 0xFF)
+							{
+								Crypto::Base::Phase2(decrypted);
+								output.push_back(decrypted);
+								decrypted = "";
+							}
+							else
+							{
+								decrypted << (uint8_t)(chr ^ 0xC3);
+							}
 						}
 						break;
 
 					default:
 						for (std::size_t i = 0; i < len; ++i)
 						{
-							packet[i] -= 0xF;
+							chr = packet[i] - 0xF;
+
+							if (chr == 0xFF)
+							{
+								Crypto::Base::Phase2(decrypted);
+								output.push_back(decrypted);
+								decrypted = "";
+							}
+							else
+							{
+								decrypted << (uint8_t)chr;
+							}
 						}
 						break;
 				}
 
-				std::vector<std::string> temp = Utils::tokenize(packet, (uint8_t)0xFF);
-				std::vector<std::string> output;
-
-				for (std::size_t i = 0; i < temp.size(); i++)
-				{
-					Crypto::Base::Phase2(temp[i]);
-					output.push_back(temp[i]);
-				}
-
-				packet.assign(temp.back());
+				packet = output.back();
 				return output;
 			}
 		}
@@ -304,17 +349,19 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::commit(std::string& packet)
+			void Encrypter::commit(NString& packet)
 			{
 				Crypto::Base::Phase1(packet);
 			}
 
-			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
+			void Encrypter::finish(NString& packet, Utils::Game::Session* session)
 			{
 				int i = 0;
 				uint8_t chr = 0;
 				std::size_t len = packet.length();
 				uint8_t key = session->key() + 0x40;
+
+				NString decrypted;
 
 				switch (session->number())
 				{
@@ -323,7 +370,7 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr += key;
-							packet[i] = chr;
+							decrypted << (uint8_t)chr;
 						}
 						break;
 
@@ -332,7 +379,7 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr -= key;
-							packet[i] = chr;
+							decrypted << (uint8_t)chr;
 						}
 						break;
 
@@ -341,7 +388,7 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i] ^ 0xC3;
 							chr += key;
-							packet[i] = chr;
+							decrypted << (uint8_t)chr;
 						}
 						break;
 
@@ -350,36 +397,38 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i] ^ 0xC3;
 							chr -= key;
-							packet[i] = chr;
+							decrypted << (uint8_t)chr;
 						}
 						break;
 						
 					default:
 						for (std::size_t i = 0; i < len; ++i)
 						{
-							packet[i] = (uint8_t)packet[i] + 0xF;
+							decrypted << (uint8_t)packet[i] + 0xF;
 						}
 						break;
 				}
+
+				packet = decrypted;
 			}
 
 			Decrypter::Decrypter():
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
+			std::vector<NString> Decrypter::parse(NString& packet, Utils::Game::Session* session)
 			{
-				std::string decAcc;
-				std::vector<std::string> output;
-				auto parts = Utils::tokenize(packet, (uint8_t)0xFF);
+				std::vector<NString> output;
 
-				for (std::size_t i = 0; i < parts.size(); ++i)
+				for (int i = 0; i < packet.tokens(0xFF).length(); ++i)
 				{
-					Crypto::Base::Phase2(parts[i]);
-					output.push_back(parts[i]);
+					NString part = packet.tokens()[i];
+
+					Crypto::Base::Phase2(part);
+					output.push_back(part);
 				}
-				
-				packet.assign(parts.back());
+
+				packet = output.back();
 				return output;
 			}
 		}

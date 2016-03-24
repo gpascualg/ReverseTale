@@ -15,28 +15,34 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
+			void Encrypter::finish(NString& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
+				NString decrypted;
+
 				for (std::size_t i = 0; i < len; ++i)
 				{
-					packet[i] = packet[i] + 0x0F;
+					decrypted << (uint8_t)(packet[i] + 0x0F);
 				}
+
+				packet = decrypted;
 			}
 
 			Decrypter::Decrypter():
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
+			std::vector<NString> Decrypter::parse(NString& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
+				NString decrypted;
+
 				for (std::size_t i = 0; i < len; ++i)
 				{
-					packet[i] = (packet[i] - 0x0F) ^ 0xC3;
+					decrypted << (uint8_t)((packet[i] - 0x0F) ^ 0xC3);
 				}
 
-				return std::vector<std::string> { packet };
+				return std::vector<NString> { decrypted };
 			}
 		}
 	}
@@ -52,28 +58,34 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
-			void Encrypter::finish(std::string& packet, Utils::Game::Session* session)
+			void Encrypter::finish(NString& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
+				NString decrypted;
+
 				for (std::size_t i = 0; i < len; ++i)
 				{
-					packet[i] = (packet[i] ^ 0xC3) + 0x0F;
+					decrypted << (uint8_t)((packet[i] ^ 0xC3) + 0x0F);
 				}
+
+				packet = decrypted;
 			}
 
 			Decrypter::Decrypter():
 				Crypto::Base::Decrypter()
 			{}
 
-			std::vector<std::string> Decrypter::parse(std::string& packet, Utils::Game::Session* session)
+			std::vector<NString> Decrypter::parse(NString& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
+				NString decrypted;
+
 				for (std::size_t i = 0; i < len; ++i)
 				{
-					packet[i] = packet[i] - 0x0F;
+					decrypted << (uint8_t)(packet[i] - 0x0F);
 				}
 
-				return std::vector<std::string> { packet };
+				return std::vector<NString> { decrypted };
 			}
 		}
 	}

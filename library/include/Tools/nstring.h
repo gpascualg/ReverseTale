@@ -12,6 +12,9 @@ struct is_literal { enum{value = false}; };
 template<>
 struct is_literal<char> { enum{value = true}; };
 
+template<>
+struct is_literal<uint8_t> { enum{value = true}; };
+
 class NString
 {
 	friend class Tokenizer;
@@ -73,7 +76,7 @@ private:
 		}
 
 	private:
-		Tokenizer(NString* string);
+		Tokenizer(NString* string, char delimiter = ' ');
 		Tokenizer() {}
 
 	private:
@@ -82,17 +85,25 @@ private:
 
 public:
 	NString();
-	explicit NString(const char* string);
-	explicit NString(std::string& string);
+	NString(const char* string);
+	NString(std::string& string);
 	NString(const NString& nstring);
 	~NString();
+
+	// Copy operator
+	NString& operator= (const NString& nstring);
 
 	// Constant attributes
 	// TODO: Getters
 	inline const char* get() { return _buffer->c_str(); }
-	//inline const int length() { return _len; }
+	inline const std::size_t length() { return _buffer->size(); }
+	inline bool empty() { return length() == 0; }
+	inline char& back() { char* t = (char*)get(); return t[length() - 1]; }
 	//inline const int capacity() { return _capacity; }
 	//inline NString clone(){ return NString(_buffer).copyTokensFrom(_tokenizer); }
+
+	// Getter
+	inline const char operator[] (int idx) { return _buffer->data()[idx]; }
 
 	// Wrappers around numberic operators
 	template <typename Type>
@@ -104,18 +115,27 @@ public:
 	template <typename Type>
 	inline NString& appendHex(Type number)
 	{
-		return operator<< <Type> (fmt::hex(number));
+		return operator<< <Type> (fmt::hexu(number));
 	}
 
 	// Appending
 	template <typename Type>
-	NString& operator<<(Type val)
+	inline typename std::enable_if<!is_literal<Type>::value, NString&>::type
+	operator<<(Type val)
 	{
 		*_buffer << val;
 		return *this;
 	}
 
-	Tokenizer& tokens();
+	template <typename Type>
+	inline typename std::enable_if<is_literal<Type>::value, NString&>::type
+	operator<<(Type val)
+	{
+		*_buffer << (char)val;
+		return *this;
+	}
+
+	Tokenizer& tokens(char delimiter = ' ');
 
 private:
 	NString& copyTokensFrom(Tokenizer* tokenizer);

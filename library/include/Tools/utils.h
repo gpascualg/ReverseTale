@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Tools/nstring.h>
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -24,7 +26,7 @@ namespace Utils
 	{
 		std::string decryptPass(std::string& password);
 		std::string encryptPass(std::string& password);
-		std::string makePacket(std::string username, std::string password);
+		NString makePacket(std::string username, std::string password);
 	}
 
 	namespace Game

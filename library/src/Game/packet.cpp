@@ -10,7 +10,7 @@ namespace Net
 {
 	Factory* Factory::_instance = nullptr;
 
-	Packet* Factory::make(PacketType type, Utils::Game::Session* session, std::string data)
+	Packet* Factory::make(PacketType type, Utils::Game::Session* session, NString data)
 	{
 		Packet* packet = nullptr;
 		if (!_pool.empty())
@@ -34,6 +34,13 @@ namespace Net
 				break;
 			case PacketType::CLIENT_GAME:
 				packet->setCrypto(Crypto::Client::Game::Encrypter::get(), Crypto::Client::Game::Decrypter::get());
+
+				// Add session alive if any
+				if (session)
+				{
+					*packet << session->alive() << ' ';
+				}
+
 				break;
 			case PacketType::SERVER_LOGIN:
 				packet->setCrypto(Crypto::Server::Login::Encrypter::get(), Crypto::Server::Login::Decrypter::get());
@@ -64,7 +71,7 @@ namespace Net
 	}
 
 
-	Packet::Packet(std::string& packet):
+	Packet::Packet(NString packet):
 		Packet()
 	{
 		_packet = packet;
@@ -73,7 +80,8 @@ namespace Net
 	Packet::Packet(int size):
 		Packet()
 	{
-		_packet.reserve(size);
+		// FIXME: NString does not have a reserve operator
+		//_packet.reserve(size);
 	}
 
 	Packet::Packet():
@@ -89,13 +97,6 @@ namespace Net
 		if (!_isCommitted)
 		{
 			_isCommitted = true;
-
-			// Automatically add alive id
-			if (_type == PacketType::CLIENT_GAME && _session)
-			{
-				_packet = Utils::hex2decimal_str(_session->alive()) + std::string(" ") + _packet;
-			}
-
 			_crypter->commit(_packet);
 		}
 	}
@@ -116,7 +117,7 @@ namespace Net
 		socket->send(_packet);
 	}
 
-	std::vector<std::string> Packet::decrypt()
+	std::vector<NString> Packet::decrypt()
 	{
 		return _decrypter->parse(_packet, _session);
 	}
@@ -126,7 +127,7 @@ namespace Net
 		_type = type;
 	}
 
-	void Packet::setData(std::string data)
+	void Packet::setData(NString data)
 	{
 		_packet = data;
 		_isCommitted = false;
@@ -143,32 +144,15 @@ namespace Net
 		_crypter = crypter;
 		_decrypter = decrypter;
 	}
-
-	Packet& Packet::operator<<(uint8_t chr)
-	{
-		_packet += chr;
-		return *this;
-	}
-
-	Packet& Packet::operator<<(const char* str)
-	{
-		return *this << std::string(str);
-	}
 	
 	Packet& Packet::operator<<(Packet& packet)
 	{
 		return *this << packet._packet;
 	}
 
-	Packet& Packet::operator<<(std::string& str)
+	Packet& Packet::operator<<(NString str)
 	{
-		_packet += str;
-		return *this;
-	}
-
-	Packet& Packet::operator<<(std::string&& str)
-	{
-		_packet += str;
+		_packet << str.get();
 		return *this;
 	}
 

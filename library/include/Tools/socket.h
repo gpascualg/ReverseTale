@@ -17,6 +17,8 @@
     #include <poll.h>
 #endif
 
+#include <Tools/nstring.h>
+
 
 #ifdef ERROR
 	#undef ERROR
@@ -66,8 +68,8 @@ public:
 	inline SocketStatus status() { return _status; }
 	inline SocketError error() { return _error; }
 	
-	virtual int send(const std::string& buffer);
-	std::string recv();
+	virtual int send(NString buffer);
+	NString recv();
 	virtual void close();
 
 protected:

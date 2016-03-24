@@ -71,7 +71,7 @@ bool Socket::setOption(int level, int option, const char* value, int valueLength
 	return result != SOCKET_ERROR;
 }
 
-std::string Socket::recv()
+NString Socket::recv()
 {
 	assert(_status == SocketStatus::CONNECTED);
 
@@ -88,11 +88,11 @@ std::string Socket::recv()
 
 	if (result > 0)
 	{
-		return std::string(_buf, result);
+		return NString(_buf);
 	}
 	else
 	{
-		return std::string("");
+		return NString();
 	}
 }
 
@@ -114,12 +114,12 @@ void Socket::close()
 	}
 }
 
-int Socket::send(const std::string& buffer)
+int Socket::send(NString buffer)
 {
 	assert(_status == SocketStatus::CONNECTED || _status == SocketStatus::CLOSING);
 
 	int len = buffer.length();
-	int result = ::send(_socket, buffer.c_str(), len, 0);
+	int result = ::send(_socket, buffer.get(), len, 0);
 
 	if (result != len)
 	{

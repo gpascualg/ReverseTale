@@ -86,19 +86,18 @@ int main(int argc, char** argv)
 		{
 			// Receive login result
 			Packet* packet = gFactory->make(PacketType::CLIENT_LOGIN, socket.recv());
-			std::vector<std::string> response = packet->decrypt();
-			std::string& data = response[0];
+			std::vector<NString> response = packet->decrypt();
+			NString& data = response[0];
 
 			// It should be NsTeST, otherwise fail
-			auto tokens = Utils::tokenize(data);
-			if (tokens[0] != "NsTeST")
+			if (data.tokens()[0] != "NsTeST")
 			{
 				std::cout << "Login failed" << std::endl;
 				getchar();
 				return 1;
 			}
 
-			sessionID = tokens[1];
+			sessionID = data.tokens()[1];
 			std::cout << "Session: " << sessionID << std::endl;
 		}
 
@@ -148,11 +147,11 @@ int main(int argc, char** argv)
 		// Receive next packet
 		{
 			Packet* packet = gFactory->make(PacketType::CLIENT_GAME, &session, socket.recv());
-			std::vector<std::string> response = packet->decrypt();
+			std::vector<NString> response = packet->decrypt();
 
-			for (std::string data : response)
+			for (NString data : response)
 			{
-				std::cout << "Recv: " << data << std::endl;
+				std::cout << "Recv: " << data.get() << std::endl;
 			}
 		}
 	}

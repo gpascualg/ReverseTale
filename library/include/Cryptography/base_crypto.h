@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-
+#include <Tools/nstring.h>
 
 namespace Utils
 {
@@ -19,8 +19,8 @@ namespace Crypto
 		class Encrypter
 		{
 		public:
-			virtual void commit(std::string& packet) {};
-			virtual void finish(std::string& packet, Utils::Game::Session* session = nullptr) = 0;
+			virtual void commit(NString& packet) {};
+			virtual void finish(NString& packet, Utils::Game::Session* session = nullptr) = 0;
 
 		protected:
 			Encrypter();
@@ -29,7 +29,7 @@ namespace Crypto
 		class Decrypter
 		{
 		public:
-			virtual std::vector<std::string> parse(std::string& packet, Utils::Game::Session* session = nullptr) = 0;
+			virtual std::vector<NString> parse(NString& packet, Utils::Game::Session* session = nullptr) = 0;
 
 		protected:
 			Decrypter();
