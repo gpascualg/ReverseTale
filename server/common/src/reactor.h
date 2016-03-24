@@ -32,6 +32,12 @@ public:
 		memset(_clients, 0, (maxConnections + 1) * sizeof(ClientType*));
 	}
 
+	~Reactor()
+	{
+		delete[] _polls;
+		delete[] _clients;
+	}
+
 	bool start(int port)
 	{
 		if (_socket->serve(port))
@@ -121,6 +127,8 @@ public:
 					std::cout << "Disconnected " << i << std::endl;
 					reactor->_polls[i].fd = 0;
 					reactor->_polls[i].events = 0;
+
+					delete reactor->_clients[i];
 					reactor->_clients[i] = nullptr;
 				}
 			}

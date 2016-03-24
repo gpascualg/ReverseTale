@@ -30,3 +30,5 @@ private:
     static ThreadPool* _instance;
     threadpool11::Pool _pool;
 };
+
+#define gPool ThreadPool::get()->pool()

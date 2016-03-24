@@ -5,10 +5,12 @@
 #include <future>
 
 
-#define MAKE_WORK(x) (bool(__thiscall Client::*)(AbstractWork*))(x)
-
 class Client;
-enum class WorkType { UNDEFINED, CLIENT, FUTURE };
+struct AbstractWork;
+
+using WorkType = bool(__thiscall Client::*)(AbstractWork*);
+#define MAKE_WORK(x) (WorkType)(x)
+
 
 struct AbstractWork
 {
@@ -29,8 +31,6 @@ protected:
 protected:
 	Client* _client;
 	std::function<bool(Client*, AbstractWork*)> _handler;
-
-	WorkType TYPE = WorkType::UNDEFINED;
 };
 
 template <typename T>
@@ -47,7 +47,6 @@ public:
 
 private:
 	std::future<T> _future;
-	WorkType TYPE = WorkType::FUTURE;
 };
 
 struct ClientWork : public AbstractWork
@@ -62,5 +61,4 @@ struct ClientWork : public AbstractWork
 
 private:
 	std::string _packet;
-	WorkType TYPE = WorkType::CLIENT;
 };
