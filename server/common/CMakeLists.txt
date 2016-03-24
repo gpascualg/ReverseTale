@@ -1,62 +1,92 @@
+# ---[ Create project
 project(ReverseTale-CommonServer)
 
+# ---[ Find all source and header files
 file(GLOB_RECURSE sources_Main      src/*.cpp     src/*.h)
-
 set(CommonServer_SOURCES
     ${sources_Main}
 )
 
-include_directories(
-	${CMAKE_BINARY_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/src
-	${CMAKE_SOURCE_DIR}/dep/inih/cpp
+# ---[ Load dependencies
+find_package(Boost)
+find_package(LibBSON)
+find_package(LibMongoC)
+find_package(libbsoncxx)
+find_package(libmongocxx)
+find_package(cppformat)
+
+# ---[ Setup include directories
+if(NOT Boost_FOUND)
+    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/threadpool11/ext/include)
+endif()
+
+set(THIRD_PARTY_INCLUDE
+    ${CMAKE_SOURCE_DIR}/server/common/src
+    ${CMAKE_SOURCE_DIR}/dep/inih/cpp
     ${CMAKE_SOURCE_DIR}/dep/threadpool11/threadpool11/include
 
-	${LIBMONGOCXX_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
+    ${LibBSON_INCLUDE_DIRS}
+    ${LibMongoC_INCLUDE_DIRS}
     ${LIBBSONCXX_INCLUDE_DIRS}
+    ${LIBMONGOCXX_INCLUDE_DIRS}
+    ${cppformat_INCLUDE_DIRS}
 )
 
-find_package(Boost)
+include_directories(
+    ${CMAKE_BINARY_DIR}
+    ${THIRD_PARTY_INCLUDE}
+)
 
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIR})
-else()
-  include_directories("${CMAKE_SOURCE_DIR}/dep/threadpool11/ext/include")
-endif()
-
+# ---[ Setup some definitions
+set(DEFINITIONS "MONGOCXX_STATIC=1 BSONCXX_STATIC=1")
 if (NOT ${DEBUG})
-	add_definitions(-DNDEBUG)
+	set(DEFINITIONS "${DEFINITIONS} NDEBUG=1")
 endif()
 
-add_definitions(-DMONGOCXX_STATIC -DBSONCXX_STATIC)
-
-if (MSVC)
-	set(SOCKET_LIB ws2_32)
-else()
-	set(SOCKET_LIB "")
-endif()
-
-link_directories(
-    ${LIBBSON_LIBRARY_DIRS}
-    ${LIBMONGOC_LIBRARY_DIRS}
-    ${LIBMONGOCXX_LIBRARY_DIRS}
-    ${LIBBSONCXX_LIBRARY_DIRS}
-)
-
+# ---[ Add library as static and add dependencies
 add_library(ReverseTale-CommonServer STATIC ${CommonServer_SOURCES})
-add_dependencies(ReverseTale-CommonServer mongo-cxx-driver)
+add_dependencies(ReverseTale-CommonServer EP_mongo-cxx-driver)
+add_dependencies(ReverseTale-CommonServer EP_cppformat)
 
+
+# ---[ Find absolute paths to libraries
+find_library(LIBBSON_LIBRARY ${LIBBSON_LIBRARIES} PATHS ${LibBSON_LIBRARY_DIRS})
+find_library(LIBMONGOC_LIBRARY ${LIBMONGOC_LIBRARIES} PATHS ${LibMongoC_LIBRARY_DIRS})
+find_library(LIBBSONCXX_LIBRARY ${LIBBSONCXX_LIBRARIES} PATHS ${LIBBSONCXX_LIBRARY_DIRS})
+find_library(LIBMONGOCXX_LIBRARY ${LIBMONGOCXX_LIBRARIES} PATHS ${LIBMONGOCXX_LIBRARY_DIRS})
+
+# ---[ Link all third party libraries
 target_link_libraries(ReverseTale-CommonServer
     ${SOCKET_LIB}
-    ${LIBMONGOCXX_LIBRARIES}
-    inih
-    ReverseTale-Library)
+    PUBLIC ${Boost_LIBRARY}
+    #PUBLIC ${LIBBSON_LIBRARY} # Not needed, libbsoncxx already links it
+    #PUBLIC ${LIBMONGOC_LIBRARY} # Not needed, libmongocxx already links it
+    PUBLIC ${LIBBSONCXX_LIBRARY}
+    PUBLIC ${LIBMONGOCXX_LIBRARY}
+    PUBLIC cppformat
+    PUBLIC inih
+    PUBLIC threadpool11
+    PUBLIC ReverseTale-Library
+)
 
+# ---[ If windows, add ws2_32 library
+if (MSVC)
+    target_link_libraries(ReverseTale-CommonServer PUBLIC ws2_32)
+endif()
+
+# ---[ Set C++11 standard
 set_property(TARGET ReverseTale-CommonServer PROPERTY CXX_STANDARD 11)
 target_compile_features(ReverseTale-CommonServer PRIVATE cxx_decltype cxx_nullptr cxx_variadic_templates)
 
+# ---[ Setup output directory and include directories
+separate_arguments(THIRD_PARTY_INCLUDE)
 set_target_properties(ReverseTale-CommonServer PROPERTIES
     OUTPUT_NAME CommonServer
     ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../bin
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/../bin
-    ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/../bin)
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/../bin
+
+    INTERFACE_COMPILE_DEFINITIONS "${DEFINITIONS}"
+    INTERFACE_INCLUDE_DIRECTORIES "${THIRD_PARTY_INCLUDE}"
+)

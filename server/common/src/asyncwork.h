@@ -8,7 +8,13 @@
 class Client;
 struct AbstractWork;
 
-using WorkType = bool(__thiscall Client::*)(AbstractWork*);
+#ifdef _WIN32
+	#define THIS_CALL __thiscall
+#else
+	#define THIS_CALL
+#endif
+
+using WorkType = bool(THIS_CALL Client::*)(AbstractWork*);
 #define MAKE_WORK(x) (WorkType)(x)
 
 

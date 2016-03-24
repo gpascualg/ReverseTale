@@ -14,6 +14,8 @@
 #include <Tools/utils.h>
 #include <reactor.h>
 
+#include <cppformat/posix.h>
+
 #include <INIReader.h>
 
 #include <ReverseTale.h>
