@@ -1,28 +1,16 @@
 #include "Tools/nstring.h"
 
-
-NString::NString(int size)
+NString::NString()
 {
-	_buffer = new char[size];
-	_append = _buffer;
-	_len = 0;
-	_capacity = size;
-	_tokenizer = nullptr;
-
-	memset(_buffer, 0, size);
-}
-
-NString::NString(const char* string)
-{
-	_len = strlen(string);
-	_buffer = new char[_len + 1];
-	_append = _buffer + _len;
-	_tokenizer = nullptr;
-
-	*this << string;
-
+	_buffer = new fmt::MemoryWriter();
 	_refs = new uint8_t;
 	*_refs = 1;
+}
+
+NString::NString(const char* string):
+	NString()
+{
+	*_buffer << string;
 }
 
 NString::NString(std::string& string):
@@ -31,11 +19,8 @@ NString::NString(std::string& string):
 
 NString::NString(const NString& nstring)
 {
-	_len = nstring._len;
 	_buffer = nstring._buffer;
-	_append = nstring._append;
 	_refs = nstring._refs;
-	_tokenizer = nstring._tokenizer;
 	++(*_refs);
 }
 
@@ -43,40 +28,8 @@ NString::~NString()
 {
 	if (--(*_refs) == 0)
 	{
-		delete[] _buffer;
 		delete _refs;
 	}
-}
-
-NString& NString::operator<<(const char* string)
-{
-	while (*string)
-	{
-		assert(_append < _buffer + _capacity && "Not enough space");
-
-		*_append = *string;
-		++_append;
-		++_len;
-		++string;
-	}
-
-	*_append = '\0';
-	return *this;
-}
-
-NString& NString::operator<<(std::string& string)
-{
-	return *this << string.c_str();
-}
-
-NString& NString::operator<<(char chr)
-{
-	assert(_append < _buffer + _capacity && "Not enough space");
-
-	*_append = chr;
-	++_append;
-	++_len;
-	return *this;
 }
 
 NString::Tokenizer& NString::tokens()
@@ -91,8 +44,8 @@ NString::Tokenizer& NString::tokens()
 
 NString::Tokenizer::Tokenizer(NString* string)
 {
-	// Do a copy
-	char* buffer = string->_buffer;
+	// FIXME: Evil cast from const to non-const
+	char* buffer = (char*)string->_buffer->c_str();
 	char* current = buffer;
 
 	while (*buffer)

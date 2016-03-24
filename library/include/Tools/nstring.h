@@ -3,15 +3,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <boost/spirit/include/karma.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/fusion/include/std_pair.hpp>
-
-// Generators
-using boost::spirit::karma::generate;
-using boost::spirit::karma::int_generator;
-using boost::spirit::karma::uint_generator;
+#include <cppformat/posix.h>
 
 
 template<typename T>
@@ -89,65 +81,37 @@ private:
 	};
 
 public:
-	explicit NString(int size);
+	NString();
 	explicit NString(const char* string);
 	explicit NString(std::string& string);
 	NString(const NString& nstring);
 	~NString();
 
 	// Constant attributes
-	inline const char* get() { return _buffer; }
-	inline const int length() { return _len; }
-	inline const int capacity() { return _capacity; }
-
-	inline NString clone(){ return NString(_buffer).copyTokensFrom(_tokenizer); }
+	// TODO: Getters
+	inline const char* get() { return _buffer->c_str(); }
+	//inline const int length() { return _len; }
+	//inline const int capacity() { return _capacity; }
+	//inline NString clone(){ return NString(_buffer).copyTokensFrom(_tokenizer); }
 
 	// Wrappers around numberic operators
-	template <typename Type, unsigned char Base = 10>
+	template <typename Type>
 	inline NString& append(Type number)
 	{
-		return operator<< <Type, Base> (number);
+		return operator<< <Type> (number);
 	}
 
 	template <typename Type>
 	inline NString& appendHex(Type number)
 	{
-		return operator<< <Type, 16> (number);
+		return operator<< <Type> (fmt::hex(number));
 	}
 
-	// String appending
-	NString& operator<<(const char* string);
-	NString& operator<<(std::string& string);
-	NString& operator<<(char chr);
-
-	// Number appending
-	template <typename Type, unsigned char Base = 10>
-	typename std::enable_if<std::is_unsigned<Type>::value, NString&>::type
-	operator<<(Type number)
+	// Appending
+	template <typename Type>
+	NString& operator<<(Type val)
 	{
-		generate(_append, uint_generator<Type, Base>(), number);
-		while (*_append)
-		{
-			assert(_append < _buffer + _capacity && "Not enough space");
-			++_append;
-			++_len;
-		}
-
-		return *this;
-	}
-
-	template <typename Type, unsigned char Base = 10>
-	typename std::enable_if<std::is_signed<Type>::value && !is_literal<Type>::value, NString&>::type
-	operator<<(Type number)
-	{
-		generate(_append, int_generator<Type, Base>(), number);
-		while (*_append)
-		{
-			assert(_append < _buffer + _capacity && "Not enough space");
-			++_append;
-			++_len;
-		}
-
+		*_buffer << val;
 		return *this;
 	}
 
@@ -157,11 +121,8 @@ private:
 	NString& copyTokensFrom(Tokenizer* tokenizer);
 
 private:
-	char* _buffer;
-	uint8_t* _refs;
-	int _len;
-	int _capacity;
-	char* _append;
-
 	Tokenizer* _tokenizer;
+	fmt::MemoryWriter* _buffer;
+
+	uint8_t* _refs;
 };

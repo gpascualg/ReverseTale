@@ -8,7 +8,6 @@ set(CommonServer_SOURCES
 )
 
 # ---[ Load dependencies
-find_package(Boost)
 find_package(LibBSON)
 find_package(LibMongoC)
 find_package(libbsoncxx)
@@ -16,21 +15,15 @@ find_package(libmongocxx)
 find_package(cppformat)
 
 # ---[ Setup include directories
-if(NOT Boost_FOUND)
-    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/threadpool11/ext/include)
-endif()
-
 set(THIRD_PARTY_INCLUDE
     ${CMAKE_SOURCE_DIR}/server/common/src
     ${CMAKE_SOURCE_DIR}/dep/inih/cpp
     ${CMAKE_SOURCE_DIR}/dep/threadpool11/threadpool11/include
 
-    ${Boost_INCLUDE_DIR}
     ${LibBSON_INCLUDE_DIRS}
     ${LibMongoC_INCLUDE_DIRS}
     ${LIBBSONCXX_INCLUDE_DIRS}
     ${LIBMONGOCXX_INCLUDE_DIRS}
-    ${cppformat_INCLUDE_DIRS}
 )
 
 include_directories(
@@ -40,14 +33,13 @@ include_directories(
 
 # ---[ Setup some definitions
 set(DEFINITIONS "MONGOCXX_STATIC=1 BSONCXX_STATIC=1")
-if (NOT ${DEBUG})
-	set(DEFINITIONS "${DEFINITIONS} NDEBUG=1")
-endif()
+#if (NOT ${DEBUG})
+#   set(DEFINITIONS "${DEFINITIONS} NDEBUG=1")
+#endif()
 
 # ---[ Add library as static and add dependencies
 add_library(ReverseTale-CommonServer STATIC ${CommonServer_SOURCES})
 add_dependencies(ReverseTale-CommonServer EP_mongo-cxx-driver)
-add_dependencies(ReverseTale-CommonServer EP_cppformat)
 
 
 # ---[ Find absolute paths to libraries
@@ -58,22 +50,14 @@ find_library(LIBMONGOCXX_LIBRARY ${LIBMONGOCXX_LIBRARIES} PATHS ${LIBMONGOCXX_LI
 
 # ---[ Link all third party libraries
 target_link_libraries(ReverseTale-CommonServer
-    ${SOCKET_LIB}
-    PUBLIC ${Boost_LIBRARY}
     #PUBLIC ${LIBBSON_LIBRARY} # Not needed, libbsoncxx already links it
     #PUBLIC ${LIBMONGOC_LIBRARY} # Not needed, libmongocxx already links it
     PUBLIC ${LIBBSONCXX_LIBRARY}
     PUBLIC ${LIBMONGOCXX_LIBRARY}
-    PUBLIC cppformat
     PUBLIC inih
     PUBLIC threadpool11
     PUBLIC ReverseTale-Library
 )
-
-# ---[ If windows, add ws2_32 library
-if (MSVC)
-    target_link_libraries(ReverseTale-CommonServer PUBLIC ws2_32)
-endif()
 
 # ---[ Set C++11 standard
 set_property(TARGET ReverseTale-CommonServer PROPERTY CXX_STANDARD 11)
