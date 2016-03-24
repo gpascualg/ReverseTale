@@ -6,23 +6,39 @@ set(LoginServer_SOURCES
     ${sources_Main}
 )
 
+find_package(Boost)
+find_package(LibBSON)
+find_package(LibMongoC)
+find_package(libbsoncxx)
+find_package(libmongocxx)
+find_package(cppformat)
+
+if(NOT Boost_FOUND)
+    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/threadpool11/ext/include)
+endif()
+
+message(WARNING ${LIBMONGOCXX_INCLUDE_DIRS})
+
 include_directories(
 	${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/server/common/src
 	${CMAKE_SOURCE_DIR}/dep/inih/cpp
     ${CMAKE_SOURCE_DIR}/dep/threadpool11/threadpool11/include
 
-	${LIBMONGOCXX_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
+    ${LibBSON_INCLUDE_DIRS}
+    ${LibMongoC_INCLUDE_DIRS}
     ${LIBBSONCXX_INCLUDE_DIRS}
+    ${LIBMONGOCXX_INCLUDE_DIRS}
+    ${cppformat_INCLUDE_DIRS}
 )
 
-find_package(Boost)
-
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIR})
-else()
-  include_directories("${CMAKE_SOURCE_DIR}/dep/threadpool11/ext/include")
-endif()
+link_directories(
+    ${LibBSON_LIBRARY_DIRS}
+    ${LibMongoC_LIBRARY_DIRS}
+    ${LIBBSONCXX_LIBRARY_DIRS}
+    ${LIBMONGOCXX_LIBRARY_DIRS}
+)
 
 if (NOT ${DEBUG})
 	add_definitions(-DNDEBUG)
@@ -36,19 +52,18 @@ else()
 	set(SOCKET_LIB "")
 endif()
 
-link_directories(
-    ${LIBBSON_LIBRARY_DIRS}
-    ${LIBMONGOC_LIBRARY_DIRS}
-    ${LIBMONGOCXX_LIBRARY_DIRS}
-    ${LIBBSONCXX_LIBRARY_DIRS}
-)
-
 add_executable(ReverseTale-LoginServer ${LoginServer_SOURCES})
-add_dependencies(ReverseTale-LoginServer mongo-cxx-driver)
+add_dependencies(ReverseTale-LoginServer EP_mongo-cxx-driver)
+add_dependencies(ReverseTale-LoginServer EP_cppformat)
 
 target_link_libraries(ReverseTale-LoginServer
     ${SOCKET_LIB}
+    ${Boost_LIBRARY}
+    ${LibBSON_LIBRARY}
+    ${LibMongoC_LIBRARY}
+    ${LIBBSONCXX_LIBRARIES}
     ${LIBMONGOCXX_LIBRARIES}
+    ${cppformat_LIBRARY}
     inih
     threadpool11
     ReverseTale-Library
