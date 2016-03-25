@@ -97,7 +97,7 @@ namespace Net
 		Packet& operator<<(NString str);
 		//Packet& operator<<(std::string&& str);
 
-		inline const NString data() { return _packet; }
+		inline NString data() { return _packet; }
 		inline PacketType type() { return _type; }
 		inline Utils::Game::Session* session() { return _session; }
 

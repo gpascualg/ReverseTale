@@ -45,11 +45,10 @@ bool Client::workRouter(AbstractWork* work)
 
 bool Client::handleConnect(ClientWork* work)
 {
-	auto tokens = Utils::tokenize(work->packet());
-	if (tokens.size() == 2)
+	if (work->packet().tokens().length() == 2)
 	{
-		_session.setAlive(Utils::decimal_str2hex(tokens[0]) + 1);
-		_session.setID(tokens[1]);
+		_session.setAlive(work->packet().tokens().from_int<uint32_t>(0) + 1);
+		_session.setID(work->packet().tokens().str(1));
 
 		_currentWork = MAKE_WORK(&Client::handleUserCredentials);
 
@@ -61,10 +60,9 @@ bool Client::handleConnect(ClientWork* work)
 
 bool Client::handleUserCredentials(ClientWork* work)
 {
-	auto tokens = Utils::tokenize(work->packet());
-	if (tokens.size() == 2)
+	if (work->packet().tokens().length() == 2)
 	{
-		_username = tokens[1];
+		_username = work->packet().tokens().str(1);
 		_currentWork = MAKE_WORK(&Client::handlePasswordCredentials);
 		return true;
 	}
@@ -74,10 +72,9 @@ bool Client::handleUserCredentials(ClientWork* work)
 
 bool Client::handlePasswordCredentials(ClientWork* work)
 {
-	auto tokens = Utils::tokenize(work->packet());
-	if (tokens.size() == 2)
+	if (work->packet().tokens().length() == 2)
 	{
-		std::string& password = tokens[1];
+		std::string password = work->packet().tokens().str(1);
 
 		std::cout << "User: " << _username << " PASS: " << password << std::endl;
 
@@ -102,9 +99,9 @@ bool Client::sendConnectionResult(FutureWork<bool>* work)
 	{
 		/*<< clist 0 Blipi 0 0 1 4 0 0 2 -1.12.1.8.-1.-1.-1.-1 1  1 1 -1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1 0 0*/
 
-		Packet* clist_start = gFactory->make(PacketType::SERVER_GAME, &_session, std::string("clist_start 200"));
-		Packet* clist_0 = gFactory->make(PacketType::SERVER_GAME, &_session, std::string("clist 0 blipi 3 0 0 9 0 0 80 1.12.1.8.0.0.0.123 1  1 1 -1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1 0 0"));
-		Packet* clist_end = gFactory->make(PacketType::SERVER_GAME, &_session, std::string("clist_end"));
+		Packet* clist_start = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist_start 200"));
+		Packet* clist_0 = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist 0 blipi 3 0 0 9 0 0 80 1.12.1.8.0.0.0.123 1  1 1 -1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1 0 0"));
+		Packet* clist_end = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist_end"));
 		
 		clist_start->send(this);
 		clist_0->send(this);
@@ -123,18 +120,18 @@ bool Client::sendConnectionResult(FutureWork<bool>* work)
 
 void Client::sendError(std::string&& error)
 {
-	Packet* errorPacket = gFactory->make(PacketType::SERVER_GAME, &_session, std::string("fail ") + error);
+	Packet* errorPacket = gFactory->make(PacketType::SERVER_GAME, &_session, NString("fail ") << error);
 	*errorPacket << (uint8_t)0xA;
 	errorPacket->send(this);
 }
 
-void Client::onRead(std::string packet)
+void Client::onRead(NString packet)
 {
 	Packet* loginPacket = gFactory->make(PacketType::SERVER_GAME, &_session, packet);
 	auto packets = loginPacket->decrypt();
 	for (auto data : packets)
 	{
-		std::cout << ">> " << data << std::endl;
+		std::cout << ">> " << data.get() << std::endl;
 		asyncWork.push(new ClientWork(this, MAKE_WORK(&Client::workRouter), data));
 	}
 }

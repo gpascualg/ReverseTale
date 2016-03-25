@@ -18,7 +18,7 @@ private:
 
 public:
 	inline Utils::Game::Session* session() { return &_session; }
-	void onRead(std::string packet);
+	void onRead(NString packet);
 	void sendError(std::string&& error);
 
 private:

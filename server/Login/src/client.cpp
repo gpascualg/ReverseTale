@@ -29,11 +29,10 @@ extern boost::lockfree::queue<AbstractWork*> asyncWork;
 
 bool Client::handleReadLogin(ClientWork* work)
 {
-	auto tokens = Utils::tokenize(work->packet());
-	if (tokens.size() >= 4)
+	if (work->packet().tokens().length() >= 4)
 	{
-		std::string& user = tokens[2];
-		std::string& pass = tokens[3];
+		std::string user = work->packet().tokens().str(2);
+		std::string pass = work->packet().tokens().str(3);
 
 		if (!user.empty() && pass.size() >= 3)
 		{
@@ -87,7 +86,7 @@ bool Client::handleLoginResult(FutureWork<int64_t>* work)
 		*gameServers << "127.0.0.1:4010:19:1.5.Prueba ";
 		*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
 
-		std::cout << "<< " << gameServers->data() << std::endl;
+		std::cout << "<< " << gameServers->data().get() << std::endl;
 
 		gameServers->send(this);
 		
@@ -107,18 +106,18 @@ bool Client::handleLoginResult(FutureWork<int64_t>* work)
 
 void Client::sendError(std::string&& error)
 {
-	Packet* errorPacket = gFactory->make(PacketType::SERVER_LOGIN, std::string("fail ") + error);
+	Packet* errorPacket = gFactory->make(PacketType::SERVER_LOGIN, NString("fail ") << error);
 	*errorPacket << (uint8_t)0xA;
 	errorPacket->send(this);
 }
 
-void Client::onRead(std::string packet)
+void Client::onRead(NString packet)
 {
 	Packet* loginPacket = gFactory->make(PacketType::SERVER_LOGIN, packet);
 	auto packets = loginPacket->decrypt();
 	for (auto data : packets)
 	{
-		std::cout << ">> " << data << std::endl;
+		std::cout << ">> " << data.get() << std::endl;
 		asyncWork.push(new ClientWork(this, MAKE_WORK(&Client::handleReadLogin), data));
 	}
 }

@@ -28,6 +28,7 @@ private:
 		const int length() { return _tokens.size(); }
 		const char* token(int idx) { return idx < length() ? _tokens[idx] : nullptr; }
 		const char* operator[](int idx) { return token(idx); }
+		std::string str(int idx) { return std::string(token(idx)); }
 		
 		template <typename T>
 		T from_int(int idx)

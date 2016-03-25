@@ -4,6 +4,8 @@
 #include <functional>
 #include <future>
 
+#include <Tools/nstring.h>
+
 
 class Client;
 struct AbstractWork;
@@ -57,14 +59,14 @@ private:
 
 struct ClientWork : public AbstractWork
 {
-	ClientWork(Client* client, std::function<bool(Client*, AbstractWork*)> handler, std::string packet) :
+	ClientWork(Client* client, std::function<bool(Client*, AbstractWork*)> handler, NString packet) :
 		AbstractWork(client, handler)
 	{
 		_packet = packet;
 	}
 
-	inline std::string packet() { return _packet; }
+	inline NString& packet() { return _packet; }
 
 private:
-	std::string _packet;
+	NString _packet;
 };

@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <Tools/socket.h>
+#include <Tools/nstring.h>
 #include <Tools/server_socket.h>
 #include <Tools/accepted_socket.h>
 #include <threadpool.h>
@@ -99,7 +100,7 @@ public:
 
 					if (reactor->_polls[i].revents & POLLIN)
 					{
-						std::string packet = reactor->_clients[i]->recv();
+						NString packet = reactor->_clients[i]->recv();
 						if (!packet.empty())
 						{
 							reactor->_clients[i]->onRead(packet);

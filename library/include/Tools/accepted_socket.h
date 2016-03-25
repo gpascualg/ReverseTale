@@ -16,20 +16,20 @@ public:
 		_sendQueue(256)
 	{}
 
-	virtual int send(std::string& packet)
+	virtual int send(NString packet) override
 	{
 		assert(_status == SocketStatus::CONNECTED);
 
-		_sendQueue.push(new std::string(packet));
+		_sendQueue.push(new NString(packet));
 		return -EWOULDBLOCK;
 	}
 
-	virtual void onRead(std::string packet) = 0;
+	virtual void onRead(NString packet) = 0;
 	virtual void onWrite()
 	{
 		while (!_sendQueue.empty())
 		{
-			std::string* packet;
+			NString* packet;
 			if (_sendQueue.pop(packet))
 			{
 				Socket::send(*packet);
@@ -38,7 +38,7 @@ public:
 		}
 	}
 
-	void close()
+	void close() override
 	{
 		_status = SocketStatus::CLOSING;
 
@@ -51,7 +51,7 @@ public:
 private:
 	sockaddr_in _address;
 
-	boost::lockfree::queue<std::string*> _sendQueue;
+	boost::lockfree::queue<NString*> _sendQueue;
 };
 
 
