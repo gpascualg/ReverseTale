@@ -75,6 +75,7 @@ NString Socket::recv()
 {
 	assert(_status == SocketStatus::CONNECTED);
 
+	memset(_buf, 0, 8192);
 	int result = ::recv(_socket, _buf, 8192, 0);
 
 	if (result == 0)
@@ -88,7 +89,7 @@ NString Socket::recv()
 
 	if (result > 0)
 	{
-		return NString(_buf);
+		return NString(_buf, result);
 	}
 	else
 	{

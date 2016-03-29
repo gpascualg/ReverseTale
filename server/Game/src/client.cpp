@@ -99,8 +99,8 @@ bool Client::sendConnectionResult(FutureWork<bool>* work)
 	{
 		/*<< clist 0 Blipi 0 0 1 4 0 0 2 -1.12.1.8.-1.-1.-1.-1 1  1 1 -1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1 0 0*/
 
-		Packet* clist_start = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist_start 200"));
-		Packet* clist_0 = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist 0 blipi 3 0 0 9 0 0 80 1.12.1.8.0.0.0.123 1  1 1 -1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1 0 0"));
+		Packet* clist_start = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist_start 0"));
+		Packet* clist_0 = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist 0 blipi 3 0 0 9 0 0 80 -1.12.1.8.-1.-1.-1.-1 1  1 1 -1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1.-1 0 0"));
 		Packet* clist_end = gFactory->make(PacketType::SERVER_GAME, &_session, NString("clist_end"));
 		
 		clist_start->send(this);

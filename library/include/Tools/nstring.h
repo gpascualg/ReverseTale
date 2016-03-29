@@ -87,6 +87,7 @@ private:
 public:
 	NString();
 	NString(const char* string);
+	NString(const char* string, int len);
 	NString(std::string& string);
 	NString(const NString& nstring);
 	~NString();

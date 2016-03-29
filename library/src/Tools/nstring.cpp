@@ -2,6 +2,7 @@
 
 NString::NString()
 {
+	_tokenizer = nullptr;
 	_buffer = new fmt::MemoryWriter();
 	_refs = new uint8_t;
 	*_refs = 1;
@@ -11,6 +12,22 @@ NString::NString(const char* string):
 	NString()
 {
 	*_buffer << string;
+}
+
+NString::NString(const char* string, int len) :
+	NString()
+{
+	while (length() < len)
+	{
+		const char *ptr = string + length();
+		if (*ptr == 0)
+		{
+			*_buffer << (char)'\0';
+			++ptr;
+		}
+
+		*_buffer << ptr;
+	}
 }
 
 NString::NString(std::string& string):
