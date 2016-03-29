@@ -6,6 +6,7 @@ set(GameServer_SOURCES
     ${sources_Main}
 )
 
+add_definitions(-DMONGOCXX_STATIC -DBSONCXX_STATIC)
 add_executable(ReverseTale-GameServer ${GameServer_SOURCES})
 
 target_include_directories(ReverseTale-GameServer

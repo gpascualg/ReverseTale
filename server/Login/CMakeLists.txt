@@ -6,6 +6,7 @@ set(LoginServer_SOURCES
     ${sources_Main}
 )
 
+add_definitions(-DMONGOCXX_STATIC -DBSONCXX_STATIC)
 add_executable(ReverseTale-LoginServer ${LoginServer_SOURCES})
 
 target_include_directories(ReverseTale-LoginServer

@@ -36,6 +36,7 @@ set(DEFINITIONS "MONGOCXX_STATIC=1 BSONCXX_STATIC=1")
 #if (NOT ${DEBUG})
 #   set(DEFINITIONS "${DEFINITIONS} NDEBUG=1")
 #endif()
+add_definitions(-DMONGOCXX_STATIC -DBSONCXX_STATIC)
 
 # ---[ Add library as static and add dependencies
 add_library(ReverseTale-CommonServer STATIC ${CommonServer_SOURCES})
@@ -43,15 +44,15 @@ add_dependencies(ReverseTale-CommonServer EP_mongo-cxx-driver)
 
 
 # ---[ Find absolute paths to libraries
-find_library(LIBBSON_LIBRARY ${LIBBSON_LIBRARIES} PATHS ${LibBSON_LIBRARY_DIRS})
-find_library(LIBMONGOC_LIBRARY ${LIBMONGOC_LIBRARIES} PATHS ${LibMongoC_LIBRARY_DIRS})
-find_library(LIBBSONCXX_LIBRARY ${LIBBSONCXX_LIBRARIES} PATHS ${LIBBSONCXX_LIBRARY_DIRS})
-find_library(LIBMONGOCXX_LIBRARY ${LIBMONGOCXX_LIBRARIES} PATHS ${LIBMONGOCXX_LIBRARY_DIRS})
+find_library(LIBBSON_LIBRARY NAMES bson-static-1.0.lib ${LIBBSON_LIBRARIES} PATHS ${LibBSON_LIBRARY_DIRS})
+find_library(LIBMONGOC_LIBRARY NAMES mongoc-static-1.0.lib ${LIBMONGOC_LIBRARIES} PATHS ${LibMongoC_LIBRARY_DIRS})
+find_library(LIBBSONCXX_LIBRARY NAMES libmongocxx.lib ${LIBBSONCXX_LIBRARIES} PATHS ${LIBBSONCXX_LIBRARY_DIRS})
+find_library(LIBMONGOCXX_LIBRARY NAMES libbsoncxx.lib ${LIBMONGOCXX_LIBRARIES} PATHS ${LIBMONGOCXX_LIBRARY_DIRS})
 
 # ---[ Link all third party libraries
 target_link_libraries(ReverseTale-CommonServer
-    #PUBLIC ${LIBBSON_LIBRARY} # Not needed, libbsoncxx already links it
-    #PUBLIC ${LIBMONGOC_LIBRARY} # Not needed, libmongocxx already links it
+    PUBLIC ${LIBBSON_LIBRARY} # Not needed, libbsoncxx already links it
+    PUBLIC ${LIBMONGOC_LIBRARY} # Not needed, libmongocxx already links it
     PUBLIC ${LIBBSONCXX_LIBRARY}
     PUBLIC ${LIBMONGOCXX_LIBRARY}
     PUBLIC inih

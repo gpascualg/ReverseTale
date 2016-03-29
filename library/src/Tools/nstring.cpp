@@ -29,6 +29,8 @@ NString& NString::operator= (const NString& nstring)
 	_buffer = nstring._buffer;
 	_refs = nstring._refs;
 	*_refs = *_refs + 1;
+
+	return *this;
 }
 
 NString::~NString()
@@ -81,4 +83,6 @@ NString& NString::copyTokensFrom(Tokenizer* tokenizer)
 		_tokenizer = new Tokenizer();
 	}
 	_tokenizer->_tokens = tokenizer->_tokens;
+
+	return *this;
 }
