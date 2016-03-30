@@ -59,8 +59,8 @@ int main(int argc, char** argv)
 
 	// Save session, user and password
 	std::string sessionID;
-	std::string username = reader.Get("Login", "User", "");
-	std::string password = reader.Get("Login", "Password", "");
+	std::string username = "blipi"; // reader.Get("Login", "User", "");
+	std::string password = "123qwe"; // reader.Get("Login", "Password", "");
 
 	// Connect to Login Server
 	{
@@ -70,7 +70,8 @@ int main(int argc, char** argv)
 		ClientSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 		socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 		socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
-		socket.connect("79.110.84.75", 4005);
+		//socket.connect("79.110.84.75", 4005);
+		socket.connect("127.0.0.1", 4005);
 
 		// Login 
 		{
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
 			NString& data = response[0];
 
 			// It should be NsTeST, otherwise fail
-			if (data.tokens()[0] != "NsTeST")
+			if (data.tokens().str(0) != "NsTeST")
 			{
 				std::cout << "Login failed" << std::endl;
 				getchar();
@@ -112,7 +113,8 @@ int main(int argc, char** argv)
 		ClientSocket socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 		socket.setOption(SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 		socket.setOption(IPPROTO_TCP, TCP_NODELAY, NULL, 0);
-		socket.connect("79.110.84.79", 4024);
+		//socket.connect("79.110.84.79", 4024);
+		socket.connect("127.0.0.1", 4006);
 
 		// Make a session & alive
 		Utils::Game::Session session;
@@ -143,9 +145,9 @@ int main(int argc, char** argv)
 			Packet* result = *user + *pass;
 			result->send(&socket);
 		}
-
+		
 		// Receive next packet
-		{
+		while (1) {
 			Packet* packet = gFactory->make(PacketType::CLIENT_GAME, &session, socket.recv());
 			std::vector<NString> response = packet->decrypt();
 

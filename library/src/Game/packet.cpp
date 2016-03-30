@@ -34,13 +34,6 @@ namespace Net
 				break;
 			case PacketType::CLIENT_GAME:
 				packet->setCrypto(Crypto::Client::Game::Encrypter::get(), Crypto::Client::Game::Decrypter::get());
-
-				// Add session alive if any
-				if (session)
-				{
-					*packet << session->alive() << ' ';
-				}
-
 				break;
 			case PacketType::SERVER_LOGIN:
 				packet->setCrypto(Crypto::Server::Login::Encrypter::get(), Crypto::Server::Login::Decrypter::get());
@@ -96,6 +89,13 @@ namespace Net
 	{
 		if (!_isCommitted)
 		{
+			// Add session alive if any
+			if (_type == PacketType::CLIENT_GAME && _session)
+			{
+				// TODO: Optimze buffer copying
+				_packet = NString() << _session->alive() << ' ' << _packet.get();
+			}
+
 			_isCommitted = true;
 			_crypter->commit(_packet);
 		}
@@ -152,7 +152,23 @@ namespace Net
 
 	Packet& Packet::operator<<(NString str)
 	{
-		_packet << str.get();
+		// TODO: Handle \0 in packet while length() < len
+		//_packet << str.get();
+		int initialLen = _packet.length();
+		const char* string = str.get();
+
+		while (_packet.length() - initialLen < str.length())
+		{
+			const char *ptr = string + _packet.length() - initialLen;
+			if (*ptr == 0)
+			{
+				_packet << (char)'\0';
+				++ptr;
+			}
+
+			_packet << ptr;
+		}
+
 		return *this;
 	}
 

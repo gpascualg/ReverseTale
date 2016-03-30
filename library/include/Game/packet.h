@@ -53,8 +53,8 @@ namespace Net
 			return _instance;
 		}
 
-		Packet* make(PacketType type, NString data = "") { return make(type, nullptr, data); }
-		Packet* make(PacketType type, Utils::Game::Session* session) { return make(type, session, ""); }
+		Packet* make(PacketType type, NString data = NString()) { return make(type, nullptr, data); }
+		Packet* make(PacketType type, Utils::Game::Session* session) { return make(type, session, NString()); }
 		Packet* make(PacketType type, Utils::Game::Session* session, NString data);
 		void recycle(Packet* packet);
 

@@ -15,6 +15,11 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
+			void Encrypter::commit(NString& packet)
+			{
+				packet << (uint8_t)0x0A;
+			}
+
 			void Encrypter::finish(NString& packet, Utils::Game::Session* session)
 			{
 				std::size_t len = packet.length();
@@ -42,6 +47,7 @@ namespace Crypto
 					decrypted << (uint8_t)((packet[i] - 0x0F) ^ 0xC3);
 				}
 
+				packet = decrypted;
 				return std::vector<NString> { decrypted };
 			}
 		}
@@ -85,6 +91,7 @@ namespace Crypto
 					decrypted << (uint8_t)(packet[i] - 0x0F);
 				}
 
+				packet = decrypted;
 				return std::vector<NString> { decrypted };
 			}
 		}

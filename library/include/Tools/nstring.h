@@ -77,7 +77,7 @@ private:
 		}
 
 	private:
-		Tokenizer(NString* string, char delimiter = ' ');
+		Tokenizer(NString* string, uint8_t delimiter = ' ');
 		Tokenizer() {}
 
 	private:
@@ -137,7 +137,10 @@ public:
 		return *this;
 	}
 
-	Tokenizer& tokens(char delimiter = ' ');
+	// 11 | 0x80 --> 8B [uint8_t = unsigned char]
+	// (char)8B ---> -B
+
+	Tokenizer& tokens(uint8_t delimiter = ' ');
 
 private:
 	NString& copyTokensFrom(Tokenizer* tokenizer);

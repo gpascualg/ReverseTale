@@ -20,7 +20,7 @@ public:
 	{
 		assert(_status == SocketStatus::CONNECTED);
 
-		_sendQueue.push(new NString(packet));
+		_sendQueue.push(new NString((const NString&)packet));
 		return -EWOULDBLOCK;
 	}
 

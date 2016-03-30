@@ -17,7 +17,7 @@ NString::NString(const char* string):
 NString::NString(const char* string, int len) :
 	NString()
 {
-	while (length() < len)
+	while (length() < (std::size_t)len)
 	{
 		const char *ptr = string + length();
 		if (*ptr == 0)
@@ -36,6 +36,7 @@ NString::NString(std::string& string):
 
 NString::NString(const NString& nstring)
 {
+	_tokenizer = nstring._tokenizer;
 	_buffer = nstring._buffer;
 	_refs = nstring._refs;
 	*_refs = *_refs + 1;
@@ -60,7 +61,7 @@ NString::~NString()
 	}
 }
 
-NString::Tokenizer& NString::tokens(char delimiter)
+NString::Tokenizer& NString::tokens(uint8_t delimiter)
 {
 	if (_tokenizer == nullptr)
 	{
@@ -70,7 +71,7 @@ NString::Tokenizer& NString::tokens(char delimiter)
 	return *_tokenizer;
 }
 
-NString::Tokenizer::Tokenizer(NString* string, char delimiter)
+NString::Tokenizer::Tokenizer(NString* string, uint8_t delimiter)
 {
 	// FIXME: Evil cast from const to non-const
 	char* buffer = (char*)string->_buffer->c_str();
@@ -78,7 +79,7 @@ NString::Tokenizer::Tokenizer(NString* string, char delimiter)
 
 	while (*buffer)
 	{
-		if (*buffer == delimiter)
+		if ((uint8_t)*buffer == delimiter)
 		{
 			*buffer = '\0';
 			_tokens.push_back(current);

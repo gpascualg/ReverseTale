@@ -84,7 +84,7 @@ bool Client::handleLoginResult(FutureWork<int64_t>* work)
 		*gameServers << "127.0.0.1:4008:8:1.3.Prueba ";
 		*gameServers << "127.0.0.1:4009:18:1.4.Prueba ";
 		*gameServers << "127.0.0.1:4010:19:1.5.Prueba ";
-		*gameServers << "-1:-1:-1:-1:10000.10000.4" << (uint8_t)0xA;
+		*gameServers << "-1:-1:-1:-1:10000.10000.4";
 
 		std::cout << "<< " << gameServers->data().get() << std::endl;
 
@@ -107,7 +107,6 @@ bool Client::handleLoginResult(FutureWork<int64_t>* work)
 void Client::sendError(std::string&& error)
 {
 	Packet* errorPacket = gFactory->make(PacketType::SERVER_LOGIN, NString("fail ") << error);
-	*errorPacket << (uint8_t)0xA;
 	errorPacket->send(this);
 }
 

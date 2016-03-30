@@ -20,7 +20,8 @@ namespace Crypto
 			class Encrypter : public Crypto::Base::Encrypter
 			{
 			public:
-				void finish(NString& packet, Utils::Game::Session* session = nullptr);
+				void commit(NString& packet) override;
+				void finish(NString& packet, Utils::Game::Session* session = nullptr) override;
 
 				static Crypto::Base::Encrypter* get()
 				{
@@ -39,7 +40,7 @@ namespace Crypto
 			class Decrypter : public Crypto::Base::Decrypter
 			{
 			public:
-				std::vector<NString> parse(NString& packet, Utils::Game::Session* session = nullptr);
+				std::vector<NString> parse(NString& packet, Utils::Game::Session* session = nullptr) override;
 
 				static Crypto::Base::Decrypter* get()
 				{
@@ -64,7 +65,7 @@ namespace Crypto
 			class Encrypter : public Crypto::Base::Encrypter
 			{
 			public:
-				void finish(NString& packet, Utils::Game::Session* session = nullptr);
+				void finish(NString& packet, Utils::Game::Session* session = nullptr) override;
 
 				static Crypto::Base::Encrypter* get()
 				{
@@ -84,7 +85,7 @@ namespace Crypto
 			class Decrypter : public Crypto::Base::Decrypter
 			{
 			public:
-				std::vector<NString> parse(NString& packet, Utils::Game::Session* session = nullptr);
+				std::vector<NString> parse(NString& packet, Utils::Game::Session* session = nullptr) override;
 
 				static Crypto::Base::Decrypter* get()
 				{

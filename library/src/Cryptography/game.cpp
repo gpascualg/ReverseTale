@@ -74,13 +74,13 @@ namespace Crypto
 				{
 					std::size_t currentLen = (currentCounter - lastCounter);
 					std::size_t sequences = (currentLen / 0x7E);
-					for (std::size_t i = 0; i < currentLen; ++i)
+					for (std::size_t i = 0; i < currentLen; i += 2)
 					{
 						if (i == (sequence_counter * 0x7E))
 						{
 							if (!sequences)
 							{
-								phase1 << ((uint8_t)(currentLen - i) | 0x80);
+								phase1 << (uint8_t)((currentLen - i) | 0x80);
 							}
 							else
 							{
@@ -90,38 +90,46 @@ namespace Crypto
 							}
 						}
 
-						char ch = packet[lastCounter];
+						char ch1 = packet[lastCounter];
 						++lastCounter;
 
-						switch ((uint8_t)ch)
+						char ch2 = packet[lastCounter];
+						++lastCounter;
+
+						switch ((uint8_t)ch1)
 						{
 							case 0x20:
-								ch = 0x1; break;
+								ch1 = 0x1; break;
 							case 0x2D:
-								ch = 0x2; break;
+								ch1 = 0x2; break;
 							case 0x2E:
-								ch = 0x3; break;
+								ch1 = 0x3; break;
 							case 0xFF:
-								ch = 0xE; break;
+								ch1 = 0xE; break;
 							default:
-								ch -= 0x2C; break;
+								ch1 -= 0x2C; break;
 						}
 
-						if (pair)
+						switch ((uint8_t)ch2)
 						{
-							phase1 << (uint8_t)(ch << 4);
-						}
-						else
-						{
-							phase1.back() |= ch;
+						case 0x20:
+							ch2 = 0x1; break;
+						case 0x2D:
+							ch2 = 0x2; break;
+						case 0x2E:
+							ch2 = 0x3; break;
+						case 0xFF:
+							ch2 = 0xE; break;
+						default:
+							ch2 -= 0x2C; break;
 						}
 
-						pair = !pair;
+						phase1 << (uint8_t)((ch1 << 4) | ch2);
 					}
 				}
 			}
 
-			phase1 <<(uint8_t)0xFF;
+			phase1 << (uint8_t)0xFF;
 			packet = phase1;
 		}
 
@@ -216,6 +224,11 @@ namespace Crypto
 				Crypto::Base::Encrypter()
 			{}
 
+			void Encrypter::commit(NString& packet)
+			{
+				packet << (uint8_t)0x0A;
+			}
+
 			void Encrypter::finish(NString& packet, Utils::Game::Session* session)
 			{
 				Crypto::Base::Phase1(packet);
@@ -280,6 +293,7 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr -= key;
+							chr ^= 0xC3;
 
 							if (chr == 0xFF)
 							{
@@ -289,7 +303,7 @@ namespace Crypto
 							}
 							else
 							{
-								decrypted << (uint8_t)(chr ^ 0xC3);
+								decrypted << (uint8_t)chr;
 							}
 						}
 						break;
@@ -299,6 +313,7 @@ namespace Crypto
 						{
 							chr = (uint8_t)packet[i];
 							chr += key;
+							chr ^= 0xC3;
 
 							if (chr == 0xFF)
 							{
@@ -308,7 +323,7 @@ namespace Crypto
 							}
 							else
 							{
-								decrypted << (uint8_t)(chr ^ 0xC3);
+								decrypted << (uint8_t)chr;
 							}
 						}
 						break;
@@ -330,6 +345,11 @@ namespace Crypto
 							}
 						}
 						break;
+				}
+
+				if (decrypted.length() > 0)
+				{
+					output.push_back(decrypted);
 				}
 
 				packet = output.back();
@@ -404,7 +424,7 @@ namespace Crypto
 					default:
 						for (std::size_t i = 0; i < len; ++i)
 						{
-							decrypted << (uint8_t)packet[i] + 0xF;
+							decrypted << (uint8_t)(packet[i] + 0xF);
 						}
 						break;
 				}
