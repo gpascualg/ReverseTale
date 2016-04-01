@@ -98,12 +98,15 @@ public:
 				{
 					cleanup = false;
 
-					if (reactor->_polls[i].revents & POLLIN)
+					if (reactor->_clients[i]->status() != SocketStatus::CLOSING)
 					{
-						NString packet = reactor->_clients[i]->recv();
-						if (!packet.empty())
+						if (reactor->_polls[i].revents & POLLIN)
 						{
-							reactor->_clients[i]->onRead(packet);
+							NString packet = reactor->_clients[i]->recv();
+							if (!packet.empty())
+							{
+								reactor->_clients[i]->onRead(packet);
+							}
 						}
 					}
 
