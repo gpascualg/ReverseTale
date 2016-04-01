@@ -32,14 +32,14 @@ namespace Utils
 			_key = Utils::encrypt_key(_idHex);
 		}
 
-		void Session::setAlive(uint32_t alive)
+		void Session::setAlive(uint16_t alive)
 		{
 			_alive = alive - 1; // -1, it will be incremented on next call
 		}
 
-		uint32_t Session::alive()
+		uint16_t Session::alive()
 		{
-			uint32_t next = _alive + 1;
+			uint16_t next = _alive + 1;
 			++_alive;
 			return next;
 		}
@@ -53,6 +53,12 @@ namespace Utils
 			}
 
 			return false;
+		}
+
+		NString Session::next_alive()
+		{
+			++_alive;
+			return NString() << _alive;
 		}
 	}
 }

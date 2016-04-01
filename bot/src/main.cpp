@@ -23,7 +23,7 @@ std::vector<std::string> filterRecv;
 bool showAsHex = false;
 
 
-DWORD baseAddress = 0x68120C;
+DWORD baseAddress = 0x681210;
 std::string sessionID;
 Utils::Game::Session session;
 
@@ -43,14 +43,14 @@ struct special_compare : public std::unary_function<std::string, bool>
 	explicit special_compare(const std::string &baseline) : baseline(baseline) {}
 	bool operator() (const std::string &arg)
 	{
-		if (baseline.size() > arg.size())
+		if (arg.size() > baseline.size())
 		{
 			return false;
 		}
 
-		for (size_t pos = 0; pos < baseline.size(); ++pos)
+		for (size_t pos = 0; pos < arg.size(); ++pos)
 		{
-			if (baseline[pos] == '*')
+			if (arg[pos] == '*')
 			{
 				return true;
 			}
@@ -63,6 +63,7 @@ struct special_compare : public std::unary_function<std::string, bool>
 
 		return true;
 	}
+
 	std::string baseline;
 };
 
@@ -70,11 +71,9 @@ Detour<int, int, const char*, int, int>* sendDetour = NULL;
 Detour<int, int, char*, int, int>* recvDetour = NULL;
 int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 {
-	int ret = (*sendDetour)(s, buf, len, flags);
-	
+
 	__asm PUSHAD;
 	__asm PUSHFD;
-
 
 	if (!threadCreated)
 	{
@@ -84,7 +83,6 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 		inputThread = std::thread(processInput);
 		std::cout << "Done, joining" << std::endl;
 	}
-
 
 	bool login = isLogin();
 	Packet* packet = nullptr;
@@ -99,6 +97,34 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	}
 
 	auto packets = packet->decrypt();
+	int ret = 0;
+	
+	if (!login)
+	{
+		if (session.id() != -1)
+		{
+			for (auto packet : packets)
+			{
+				NString newPacket;
+				for (int i = 1; i < packet.tokens().length(); ++i)
+				{
+					newPacket << ' ' << packet.tokens()[i];
+				}
+
+				auto reencryptedPacket = gFactory->make(PacketType::CLIENT_GAME, &session, newPacket);
+				reencryptedPacket->commit();
+				reencryptedPacket->finish();
+
+				ret += (*sendDetour)(s, newPacket.get(), newPacket.length(), flags);
+			}
+		}
+	}
+
+	if (ret == 0)
+	{
+		ret = (*sendDetour)(s, buf, len, flags);
+	}
+
 	for (auto packet : packets)
 	{
 		if (!packet.empty())
@@ -108,13 +134,20 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 				continue;
 			}
 
-			//std::cout << tokens[1] << std::endl;
-			if (std::find(filterSend.begin(), filterSend.end(), special_compare(packet.tokens().str(1))) != filterSend.end())
+			std::string pattern = packet.tokens().str(1);
+			if (std::find_if(filterSend.begin(), filterSend.end(), special_compare(pattern)) != filterSend.end())
 			{
 				printf("\nSend:\n");
 				if (!showAsHex)
 				{
-					std::cout << "<< " << packet.get() << std::endl;
+					std::cout << "<< ";
+
+					for (int i = 0; i < packet.tokens().length(); ++i)
+					{
+						std::cout << packet.tokens()[i];
+					}
+
+					std::cout << std::endl;
 				}
 				else
 				{
@@ -135,10 +168,10 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 		session.setAlive(packets[0].tokens().from_int<uint32_t>(0));
 	}
 	
+	gFactory->recycle(packet);
+	
 	__asm POPFD;
 	__asm POPAD;
-
-	gFactory->recycle(packet);
 
 	return ret;
 }
@@ -171,12 +204,19 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 				continue;
 			}
 
-			if (std::find(filterRecv.begin(), filterRecv.end(), special_compare(packet.tokens().str(0))) != filterRecv.end())
+			if (std::find_if(filterRecv.begin(), filterRecv.end(), special_compare(packet.tokens().str(0))) != filterRecv.end())
 			{
 				printf("\nRecv:\n");
 				if (!showAsHex)
 				{
-					std::cout << "<< " << packet.get() << std::endl;
+					std::cout << "<< ";
+
+					for (int i = 0; i < packet.tokens().length(); ++i)
+					{
+						std::cout << packet.tokens()[i];
+					}
+
+					std::cout << std::endl;
 				}
 				else
 				{
@@ -190,7 +230,7 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 		}
 	}
 
-	if (login)
+	if (login && packets.size() > 0 && packets[0].tokens().length() >= 2)
 	{
 		sessionID = packets[0].tokens().str(1);
 	}
@@ -225,8 +265,8 @@ void processInput()
 		std::string input;
 		std::cout << "Enter Filter: ";
 		std::cin >> input;
-
-		if (input.length() > 2)
+					
+		if (input.length() >= 2)
 		{
 			if (input.compare("toggle_hex") == 0)
 			{
@@ -251,8 +291,8 @@ void processInput()
 
 			if (rem)
 			{
-				//std::string filter = input.substr(2);
-				//filterVec->erase(std::remove(filterVec->begin(), filterVec->end(), filter), filterVec->end());
+				std::string filter = input.substr(2);
+				filterVec->erase(std::remove(filterVec->begin(), filterVec->end(), filter), filterVec->end());
 			}
 			else
 			{

@@ -39,10 +39,11 @@ namespace Utils
 
 			void reset();
 			void setID(std::string id);
-			void setAlive(uint32_t alive);
+			void setAlive(uint16_t alive);
 
-			uint32_t alive();
+			uint16_t alive();
 			bool check_alive(std::string& alive);
+			NString next_alive();
 
 			inline uint32_t id() { return _idHex; }
 			inline uint8_t number() { return _number; }
@@ -51,7 +52,7 @@ namespace Utils
 		private:
 			std::string _id;
 			uint32_t _idHex;
-			uint32_t _alive;
+			uint16_t _alive;
 			uint8_t _number;
 			uint8_t _key;
 		};
