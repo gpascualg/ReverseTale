@@ -38,6 +38,34 @@ inline bool isLogin()
 	return *(BYTE*)(pointer2 + 0x31) == 0x00;
 }
 
+struct special_compare : public std::unary_function<std::string, bool>
+{
+	explicit special_compare(const std::string &baseline) : baseline(baseline) {}
+	bool operator() (const std::string &arg)
+	{
+		if (baseline.size() > arg.size())
+		{
+			return false;
+		}
+
+		for (size_t pos = 0; pos < baseline.size(); ++pos)
+		{
+			if (baseline[pos] == '*')
+			{
+				return true;
+			}
+
+			if (baseline[pos] != arg[pos])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+	std::string baseline;
+};
+
 Detour<int, int, const char*, int, int>* sendDetour = NULL;
 Detour<int, int, char*, int, int>* recvDetour = NULL;
 int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
@@ -62,12 +90,12 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	Packet* packet = nullptr;
 	if (login)
 	{
-		packet = gFactory->make(PacketType::SERVER_LOGIN, &session, std::string(buf, len));
+		packet = gFactory->make(PacketType::SERVER_LOGIN, &session, NString(buf, len));
 		session.reset();
 	}
 	else
 	{
-		packet = gFactory->make(PacketType::SERVER_GAME, &session, std::string(buf, len));
+		packet = gFactory->make(PacketType::SERVER_GAME, &session, NString(buf, len));
 	}
 
 	auto packets = packet->decrypt();
@@ -75,20 +103,18 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	{
 		if (!packet.empty())
 		{
-			auto tokens = Utils::tokenize(packet);
-
-			if (tokens.size() < 2)
+			if (packet.tokens().length() < 2)
 			{
 				continue;
 			}
 
 			//std::cout << tokens[1] << std::endl;
-			if (std::find(filterSend.begin(), filterSend.end(), tokens[1]) != filterSend.end())
+			if (std::find(filterSend.begin(), filterSend.end(), special_compare(packet.tokens().str(1))) != filterSend.end())
 			{
 				printf("\nSend:\n");
 				if (!showAsHex)
 				{
-					std::cout << "<< " << packet << std::endl;
+					std::cout << "<< " << packet.get() << std::endl;
 				}
 				else
 				{
@@ -105,9 +131,8 @@ int WINAPI nuestro_send(SOCKET s, const char *buf, int len, int flags)
 	// Set session after decrypting
 	if (!login && session.id() == -1)
 	{
-		auto tokens = Utils::tokenize(packets[0]);
 		session.setID(sessionID);
-		session.setAlive(Utils::decimal_str2hex(tokens[0]));
+		session.setAlive(packets[0].tokens().from_int<uint32_t>(0));
 	}
 	
 	__asm POPFD;
@@ -129,30 +154,29 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 	Packet* packet = nullptr;
 	if (login)
 	{
-		packet = gFactory->make(PacketType::CLIENT_LOGIN, &session, std::string(buf, ret));
+		packet = gFactory->make(PacketType::CLIENT_LOGIN, &session, NString(buf, ret));
 	}
 	else
 	{
-		packet = gFactory->make(PacketType::CLIENT_GAME, &session, std::string(buf, ret));
+		packet = gFactory->make(PacketType::CLIENT_GAME, &session, NString(buf, ret));
 	}
 
 	auto packets = packet->decrypt();
-	for (std::string packet : packets)
+	for (NString packet : packets)
 	{
 		if (!packet.empty())
 		{
-			auto tokens = Utils::tokenize(packet);
-			if (tokens.size() < 1)
+			if (packet.tokens().length() < 1)
 			{
 				continue;
 			}
 
-			if (std::find(filterRecv.begin(), filterRecv.end(), tokens[0]) != filterRecv.end())
+			if (std::find(filterRecv.begin(), filterRecv.end(), special_compare(packet.tokens().str(0))) != filterRecv.end())
 			{
 				printf("\nRecv:\n");
 				if (!showAsHex)
 				{
-					std::cout << "<< " << packet << std::endl;
+					std::cout << "<< " << packet.get() << std::endl;
 				}
 				else
 				{
@@ -168,8 +192,7 @@ int WINAPI nuestro_recv(SOCKET s, char *buf, int len, int flags)
 
 	if (login)
 	{
-		auto tokens = Utils::tokenize(packets[0]);
-		sessionID = tokens[1];
+		sessionID = packets[0].tokens().str(1);
 	}
 
 	gFactory->recycle(packet);
