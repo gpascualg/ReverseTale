@@ -128,7 +128,7 @@ int main(int argc, char** argv)
 		}
 
 		// Set session and wait
-		session.setID(sessionID);
+		session.setID(Utils::decimal_str2hex(sessionID));
 		Sleep(1000);
 
 		// Send username and password

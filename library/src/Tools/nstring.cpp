@@ -2,7 +2,7 @@
 
 NString::NString()
 {
-	_tokenizer = nullptr;
+	_tokenizer = new Tokenizer();
 	_buffer = new fmt::MemoryWriter();
 	_refs = new uint8_t;
 	*_refs = 1;
@@ -17,17 +17,7 @@ NString::NString(const char* string):
 NString::NString(const char* string, int len) :
 	NString()
 {
-	while (length() < (std::size_t)len)
-	{
-		const char *ptr = string + length();
-		if (*ptr == 0)
-		{
-			*_buffer << (char)'\0';
-			++ptr;
-		}
-
-		*_buffer << ptr;
-	}
+	*_buffer << fmt::BasicStringRef<char>(string, len);
 }
 
 NString::NString(std::string& string):
@@ -44,6 +34,7 @@ NString::NString(const NString& nstring)
 
 NString& NString::operator= (const NString& nstring)
 {
+	_tokenizer = nstring._tokenizer;
 	_buffer = nstring._buffer;
 	_refs = nstring._refs;
 	*_refs = *_refs + 1;
@@ -63,15 +54,19 @@ NString::~NString()
 
 NString::Tokenizer& NString::tokens(uint8_t delimiter)
 {
-	if (_tokenizer == nullptr)
+	if (!_tokenizer->_tokenized)
 	{
-		_tokenizer = new Tokenizer(this, delimiter);
+		_tokenizer->tokenize(this, delimiter);
 	}
 
 	return *_tokenizer;
 }
 
-NString::Tokenizer::Tokenizer(NString* string, uint8_t delimiter)
+NString::Tokenizer::Tokenizer() :
+	_tokenized(false)
+{}
+
+void NString::Tokenizer::tokenize(NString* string, uint8_t delimiter)
 {
 	// FIXME: Evil cast from const to non-const
 	char* buffer = (char*)string->_buffer->c_str();
@@ -82,7 +77,7 @@ NString::Tokenizer::Tokenizer(NString* string, uint8_t delimiter)
 		if ((uint8_t)*buffer == delimiter)
 		{
 			*buffer = '\0';
-			_tokens.push_back(current);
+			_tokens.push_back(std::make_pair(current, buffer - current));
 			current = buffer + 1;
 		}
 		++buffer;
@@ -90,8 +85,10 @@ NString::Tokenizer::Tokenizer(NString* string, uint8_t delimiter)
 
 	if (current != buffer)
 	{
-		_tokens.push_back(current);
+		_tokens.push_back(std::make_pair(current, buffer - current));
 	}
+
+	_tokenized = true;
 }
 
 NString& NString::copyTokensFrom(Tokenizer* tokenizer)

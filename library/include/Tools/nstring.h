@@ -26,7 +26,8 @@ private:
 
 	public:
 		const int length() { return _tokens.size(); }
-		const char* token(int idx) { return idx < length() ? _tokens[idx] : nullptr; }
+		const int length(int idx) { return idx < length() ? _tokens[idx].second : -1; }
+		const char* token(int idx) { return idx < length() ? _tokens[idx].first : nullptr; }
 		const char* operator[](int idx) { return token(idx); }
 		std::string str(int idx) { return std::string(token(idx)); }
 		
@@ -77,11 +78,12 @@ private:
 		}
 
 	private:
-		Tokenizer(NString* string, uint8_t delimiter = ' ');
-		Tokenizer() {}
+		Tokenizer();
+		void tokenize(NString* string, uint8_t delimiter = ' ');
 
 	private:
-		std::vector<char*> _tokens;
+		bool _tokenized = false;
+		std::vector<std::pair<char*, int> > _tokens;
 	};
 
 public:

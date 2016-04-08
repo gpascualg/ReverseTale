@@ -248,6 +248,8 @@ namespace Crypto
 				std::vector<NString> output;
 				NString decrypted;
 
+				printf("Server::Game::Decrypter: %d\n", packet.length());
+
 				switch (session->number())
 				{
 					case 0:
@@ -258,6 +260,8 @@ namespace Crypto
 
 							if (chr == 0xFF)
 							{
+								printf("Server::Game::Decrypter: Adding 1\n");
+
 								Crypto::Base::Phase2(decrypted);
 								output.push_back(decrypted);
 								decrypted = "";
@@ -277,6 +281,8 @@ namespace Crypto
 
 							if (chr == 0xFF)
 							{
+								printf("Server::Game::Decrypter: Adding 1\n");
+
 								Crypto::Base::Phase2(decrypted);
 								output.push_back(decrypted);
 								decrypted = "";
@@ -297,6 +303,8 @@ namespace Crypto
 
 							if (chr == 0xFF)
 							{
+								printf("Server::Game::Decrypter: Adding 1\n");
+
 								Crypto::Base::Phase2(decrypted);
 								output.push_back(decrypted);
 								decrypted = "";
@@ -317,6 +325,8 @@ namespace Crypto
 
 							if (chr == 0xFF)
 							{
+								printf("Server::Game::Decrypter: Adding 1\n");
+
 								Crypto::Base::Phase2(decrypted);
 								output.push_back(decrypted);
 								decrypted = "";
@@ -335,6 +345,8 @@ namespace Crypto
 
 							if (chr == 0xFF)
 							{
+								printf("Server::Game::Decrypter: Adding 1\n");
+
 								Crypto::Base::Phase2(decrypted);
 								output.push_back(decrypted);
 								decrypted = "";
@@ -347,10 +359,12 @@ namespace Crypto
 						break;
 				}
 
+				/*
 				if (decrypted.length() > 0)
 				{
 					output.push_back(decrypted);
 				}
+				*/
 
 				packet = output.back();
 				return output;
@@ -442,7 +456,7 @@ namespace Crypto
 
 				for (int i = 0; i < packet.tokens(0xFF).length(); ++i)
 				{
-					NString part = packet.tokens()[i];
+					NString part(packet.tokens()[i], packet.tokens().length(i));
 
 					Crypto::Base::Phase2(part);
 					output.push_back(part);

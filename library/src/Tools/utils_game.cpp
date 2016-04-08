@@ -6,11 +6,6 @@ namespace Utils
 {
 	namespace Game
 	{
-		Session::Session(std::string id)
-		{
-			setID(id);
-		}
-
 		Session::Session()
 		{
 			reset();
@@ -18,16 +13,14 @@ namespace Utils
 
 		void Session::reset()
 		{
-			_id = "";
 			_idHex = -1;
 			_key = -1;
 			_number = -1;
 		}
 
-		void Session::setID(std::string id)
+		void Session::setID(uint32_t id)
 		{
-			_id = id;
-			_idHex = Utils::decimal_str2hex(id);
+			_idHex = id;
 			_number = Utils::encrypt_number(_idHex);
 			_key = Utils::encrypt_key(_idHex);
 		}

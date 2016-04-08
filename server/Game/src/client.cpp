@@ -48,7 +48,7 @@ bool Client::handleConnect(ClientWork* work)
 	if (work->packet().tokens().length() == 2)
 	{
 		_session.setAlive(work->packet().tokens().from_int<uint32_t>(0) + 1);
-		_session.setID(work->packet().tokens().str(1));
+		_session.setID(work->packet().tokens().from_int<uint32_t>(1));
 
 		_currentWork = MAKE_WORK(&Client::handleUserCredentials);
 

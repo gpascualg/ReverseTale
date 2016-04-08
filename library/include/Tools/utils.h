@@ -34,11 +34,10 @@ namespace Utils
 		class Session
 		{
 		public:
-			Session(std::string id);
 			Session();
 
 			void reset();
-			void setID(std::string id);
+			void setID(uint32_t id);
 			void setAlive(uint16_t alive);
 
 			uint16_t alive();
@@ -50,7 +49,6 @@ namespace Utils
 			inline uint8_t key() { return _key; }
 
 		private:
-			std::string _id;
 			uint32_t _idHex;
 			uint16_t _alive;
 			uint8_t _number;
