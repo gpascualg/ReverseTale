@@ -1,9 +1,0 @@
-[submodule "dep/xHacking"]
-	path = dep/xHacking
-	url = https://github.com/gpascualg/xHacking.git
-[submodule "dep/inih"]
-	path = dep/inih
-	url = https://github.com/benhoyt/inih.git
-[submodule "dep/threadpool11"]
-	path = dep/threadpool11
-	url = https://github.com/tghosgor/threadpool11.git
